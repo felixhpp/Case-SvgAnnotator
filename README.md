@@ -2,9 +2,9 @@
 
 结构化标注工具jquery插件。
 
-[![license](https://img.shields.io/github/license/felixhpp/Test.svg)](https://github.com/felixhpp/Test/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/felixhpp/Case-SvgAnnotator.svg)](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/npm%20version-1.2.1-brightgreen.svg)](https://www.npmjs.com/package/case-annotator)
-[![GitHub release](https://img.shields.io/github/release/felixhpp/Test.svg)](https://github.com/felixhpp/Test/releases)
+[![GitHub release](https://img.shields.io/github/release/felixhpp/Case-SvgAnnotator.svg)](https://github.com/felixhpp/Case-SvgAnnotator/releases)
 
 ## 声明
 
@@ -16,7 +16,7 @@
 
 ### 直接下载js文件引用
 
-直接从[dist](https://github.com/felixhpp/Test/tree/master/dist)目录中获取js文件;
+直接从[dist](https://github.com/felixhpp/Case-SvgAnnotator/tree/master/dist)目录中获取js文件;
 
 ### 从源码编译本项目
 
