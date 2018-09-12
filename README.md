@@ -4,7 +4,7 @@
 
 [![license](https://img.shields.io/github/license/felixhpp/Test.svg)](https://github.com/felixhpp/Test/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/npm%20version-1.2.1-brightgreen.svg)](https://www.npmjs.com/package/case-annotator)
-[![GitHub release](https://img.shields.io/github/release/felixhpp/Test.svg)](https://github.com/felixhpp/Test/releases/tag/v1.0)
+[![GitHub release](https://img.shields.io/github/release/felixhpp/Test.svg)](https://github.com/felixhpp/Test/releases/tag/v1.2.1)
 
 ## 声明
 
