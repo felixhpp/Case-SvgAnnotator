@@ -18,6 +18,15 @@
 
 直接从[dist](https://github.com/felixhpp/Case-SvgAnnotator/tree/master/dist)目录中获取js文件;
 
+```
+ <script src="jquery-1.11.1.js"></script>
+ <script src="jquery.annotator.js"></script>
+ <script>
+    var svgAnnotator = $.SvgAnnotator(document.getElementById("div"), "这是一段文本或者一个对象", {});
+ </script>
+ 
+```
+
 ### 从源码编译本项目
 
 ```
