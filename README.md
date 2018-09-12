@@ -1,4 +1,4 @@
-# Poplar
+# Case-Annotation
 
 [![license](https://img.shields.io/github/license/synyi/poplar.svg)](https://github.com/synyi/poplar/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/npm%20version-1.1.2-brightgreen.svg)](https://www.npmjs.com/package/poplar-annotation)
