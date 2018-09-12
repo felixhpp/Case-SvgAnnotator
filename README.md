@@ -6,7 +6,7 @@
 
 本项目学习之用，如需查看TypeScript版本[poplar](https://github.com/synyi/poplar)
 
-在此特别感谢@synyi的开源项目[poplar](https://github.com/synyi/poplar)，
+在此特别感谢@[synyi](https://github.com/synyi)的开源项目[poplar](https://github.com/synyi/poplar)，
 
 ## 使用方法
 
