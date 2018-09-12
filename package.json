@@ -1,15 +1,15 @@
 {
   "name": "case-annotator",
   "version": "1.1.2",
-  "description": " web-based annotation tool for natural language processing (NLP) needs, inspired by brat rapid annotation tool.",
+  "description": " 结构化标注工具jquery插件。",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/synyi/Poplar.git"
+    "url": "git+https://github.com/felixhpp/Case-SvgAnnotator.git"
   },
-  "author": "longfangsong <longfangsong@icloud.com>",
+  "author": "felix <felixhpp@163.com>",
   "license": "GPL-3.0",
   "private": false,
   "dependencies": {
@@ -46,9 +46,9 @@
     "build": "webpack --config webpack.prod.js"
   },
   "bugs": {
-    "url": "https://github.com/synyi/Poplar/issues"
+    "url": "https://github.com/felixhpp/Case-SvgAnnotator/issues"
   },
-  "homepage": "https://github.com/synyi/Poplar#readme",
+  "homepage": "https://github.com/felixhpp/Case-SvgAnnotator#readme",
   "directories": {
     "doc": "doc"
   }
