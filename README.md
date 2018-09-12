@@ -16,7 +16,7 @@
 
 ### 直接下载js文件引用
 
-直接从dist目录中获取js文件： [目录](https://github.com/felixhpp/Test/tree/master/dist)
+直接从[dist](https://github.com/felixhpp/Test/tree/master/dist)目录中获取js文件;
 
 ### 从源码编译本项目
 
