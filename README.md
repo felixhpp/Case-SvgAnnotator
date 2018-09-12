@@ -36,5 +36,6 @@ gult
 
 ```
 
-
+### API
+请查看[API](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/api.md)
 
