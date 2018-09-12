@@ -1,0 +1,55 @@
+{
+  "name": "case-annotator",
+  "version": "1.1.2",
+  "description": " web-based annotation tool for natural language processing (NLP) needs, inspired by brat rapid annotation tool.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "typings": "dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synyi/Poplar.git"
+  },
+  "author": "longfangsong <longfangsong@icloud.com>",
+  "license": "GPL-3.0",
+  "private": false,
+  "dependencies": {
+    "events": "^3.0.0",
+    "rxjs": "^6.2.2",
+    "svg.js": "^2.6.5"
+  },
+  "devDependencies": {
+    "@types/events": "^1.2.0",
+    "@types/jquery": "^3.3.6",
+    "@types/mocha": "^5.2.5",
+    "browserify": "^16.2.2",
+    "chai": "^4.1.2",
+    "factor-bundle": "^2.5.0",
+    "gulp": "^3.9.1",
+    "gulp-sourcemaps": "^2.6.4",
+    "gulp-typescript": "^5.0.0-alpha.3",
+    "gulp-uglify": "^3.0.1",
+    "gulp-util": "^3.0.8",
+    "html-webpack-plugin": "^3.2.0",
+    "mocha": "^5.2.0",
+    "ts-loader": "^4.4.2",
+    "tsify": "^4.0.0",
+    "typescript": "^3.0.3",
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-source-stream": "^2.0.0",
+    "watchify": "^3.11.0",
+    "webpack": "^4.16.5",
+    "webpack-cli": "^3.1.0",
+    "webpack-dev-server": "^3.1.5"
+  },
+  "scripts": {
+    "start:dev": "gulp && webpack-dev-server --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js"
+  },
+  "bugs": {
+    "url": "https://github.com/synyi/Poplar/issues"
+  },
+  "homepage": "https://github.com/synyi/Poplar#readme",
+  "directories": {
+    "doc": "doc"
+  }
+}
