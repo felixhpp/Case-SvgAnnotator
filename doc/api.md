@@ -28,7 +28,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
  </script>
 ```
 
-#### data
+### data
 
 在data为JSON时，格式如下：
 
@@ -38,15 +38,15 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 构造后，对应元素内应该就会显示出对应的SVG图片。
 
-#### options
+### options
 
 `options`是一个`object`对象，选项通常作为参数传递给init或attach动作。其中可配置的值如下：
 
-### maxLineWidth
+#### maxLineWidth
 最大行宽，在一行中的字符数超过此数值后会进行折行。
 默认值为：80
 
-### textSelected(startIndex,endIndex)
+#### textSelected(startIndex,endIndex)
 文本选中后的回调函数
 
 | 参数       | 意义               |
@@ -54,14 +54,14 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 | startIndex | 选取部分的开始坐标 |
 | endIndex   | 选取部分的结束坐标 |
 
-### labelClicked(id)
+#### labelClicked(id)
 左键点击了一个Label后会触发事件回调函数
 
 | 参数 | 意义             |
 | ---- | ---------------- |
 | id   | 被点击的标注的id |
 
-### twoLabelsClicked(first, second)
+#### twoLabelsClicked(first, second)
 用户先后左键点击了两个Label后事件回调函数
 
 | 参数   | 意义                 |
@@ -69,7 +69,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 | first  | 第一个点击的标注的id |
 | second | 第二个点击的标注的id |
 
-### labelRightClicked(id, x, y)
+#### labelRightClicked(id, x, y)
 用户右键点击了一个Label后回调函数
 
 | 参数 | 意义              |
@@ -78,7 +78,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 | x    | 被点击时鼠标的X值 |
 | y    | 被点击时鼠标的Y值 |
 
-### connectionRightClicked(id, x, y)
+#### connectionRightClicked(id, x, y)
 用户右键点击了一个连接的文字部分后事件回调函数
 
 | 参数 | 意义              |
@@ -87,27 +87,27 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 | x    | 被点击时鼠标的X值 |
 | y    | 被点击时鼠标的Y值 |
 
-#### Methods
+### Methods
 
 提供了多个方法供用户调用
 
-### createLabel (labelId, startIndex, endIndex)
+#### createLabel (labelId, startIndex, endIndex)
 创建标注(label)
 
-### deleteLabel (labelId)
+#### deleteLabel (labelId)
 删除标注(label)
 
-### updateLabel (labelId, categoryId)
+#### updateLabel (labelId, categoryId)
 修改标注(label)
 
-### createConnection (categoryId, startIndex, endIndex)
+#### createConnection (categoryId, startIndex, endIndex)
 创建连接(Connection)
 
-### deleteConnection (categoryId)
+#### deleteConnection (categoryId)
 删除连接(Connection)
 
-### updateConnection (labelId, categoryId)
+#### updateConnection (labelId, categoryId)
 修改连接(Connection)
 
-### download()
+#### download()
 下载json文件
