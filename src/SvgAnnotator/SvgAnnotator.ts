@@ -91,8 +91,8 @@ export class SvgAnnotator {
      * @param startIndex 
      * @param endIndex 
      */
-    public createConnection (categoryId: number, startIndex: number, endIndex: number) {
-        this._applyAction(Action.Connection.Create(categoryId, startIndex, endIndex));
+    public createConnection (categoryId: number, fromId: number, toId: number) {
+        this._applyAction(Action.Connection.Create(categoryId, fromId, toId));
     };
     /**
      * 删除连接(Connection)
@@ -106,8 +106,8 @@ export class SvgAnnotator {
      * @param labelId 
      * @param categoryId 
      */
-    public updateConnection (labelId: number, categoryId: number) {
-        this._applyAction(Action.Connection.Update(labelId, categoryId));
+    public updateConnection (connectionId: number, categoryId: number) {
+        this._applyAction(Action.Connection.Update(connectionId, categoryId));
     };
   
     public getJsonStr(){

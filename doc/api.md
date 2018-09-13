@@ -24,7 +24,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
  <script src="jquery-1.11.1.js"></script>
  <script src="Case-SvgAnnotator.js"></script>
  <script>
-    var svgAnnotator = $.SvgAnnotator(document.getElementById("div"), data, options);
+    var svgAnnotator = $.SvgAnnotator(document.getElementById("example"), data, options);
  </script>
 ```
 
@@ -89,31 +89,55 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 ### Methods
 
-提供了多个方法供用户调用
+插件对原始方法进行了封装，方便在js中调用，调用方式：`svgAnnotator.MethodName(参数)`
 
-#### createLabel (labelId, startIndex, endIndex)
+#### createLabel (categoryId, startIndex, endIndex)
 创建标注(label)
 
 | 参数 | 意义              |
 | ---- | ----------------- |
-| labelId   | 被点击的连接的id  |
-| startIndex    | 被点击时鼠标的X值 |
-| endIndex    | 被点击时鼠标的Y值 |
+| categoryId   | 被创建的labelCategories的id  |
+| startIndex    | 被创建的label的起始位置 |
+| endIndex    | 被创建的label的结束位置 |
 
 #### deleteLabel (labelId)
 删除标注(label)
 
+| 参数 | 意义              |
+| ---- | ----------------- |
+| labelId   | 要删除的label的id  |
+
 #### updateLabel (labelId, categoryId)
 修改标注(label)
 
-#### createConnection (categoryId, startIndex, endIndex)
+| 参数 | 意义              |
+| ---- | ----------------- |
+| labelId   | 要修改的label的id  |
+| categoryId   | 要修改的labelCategories的id  |
+
+#### createConnection (categoryId, fromId, toId)
 创建连接(Connection)
+
+| 参数 | 意义              |
+| ---- | ----------------- |
+| categoryId   | 被创建的ConnectionCategories的id  |
+| fromId    | 起始位置label的id |
+| toId    | 结束位置label的id |
 
 #### deleteConnection (categoryId)
 删除连接(Connection)
 
-#### updateConnection (labelId, categoryId)
+| 参数 | 意义              |
+| ---- | ----------------- |
+| categoryId   | 要删除的ConnectionCategories的id  |
+
+#### updateConnection (connectionId, categoryId)
 修改连接(Connection)
 
+| 参数 | 意义              |
+| ---- | ----------------- |
+| connectionId   | 要修改的Connection的id  |
+| categoryId   | 要修改的ConnectionCategories的id  |
+
 #### download()
-下载json文件
+下载对应的[JSON格式](http://www.pic68.com/uploads/2018/08/1(7).png)数据文件
