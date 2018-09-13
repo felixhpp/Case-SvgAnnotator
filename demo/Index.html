@@ -23,9 +23,6 @@
         }
 
     </style>
-    <script src="./jquery-1.11.1.js"></script>
-    <script src="./bootstrap/js/bootstrap.min.js"></script>
-    <script src="../dist/Case-SvgAnnotator.js"></script>
 </head>
 <body>
     <div id="demo">
@@ -86,105 +83,107 @@
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal -->
 </div>
-
-    <script>
-        
-
-        var originString = "hello world";
-        var obj = {
-            "content": "第2次入院记录|XX,男,63岁,汉族,黑龙江省人,工作单位:XXXX,已婚。于2017年06月1415:34入院,当日采集病史,患者本人陈述病史,可靠。|主诉:反复发作性间断性上腹痛1年。|现病史:1年前无明显诱因开始出现上腹部疼痛,呈烧灼杨钝痛,空腹时明显,夜间为著,进食后可缓解,无明显反酸、嗳气,未行进一步治疗。1年来上述症状反复发作,无明显规律,口服洛赛克等药物治疗有效。近半年来,腹痛症状发作较前频繁,出现反酸。无明显嗳气,无纳差,无放射痛,未出现呕血及黑便。于05月27日就诊于中国日友好医院,行胃镜检查及活检,提示胃多发腺癌。现为行进一步诊治就诊我院,门诊以'胃癌 '收入院。患者目前精神状态良好,体力正常,食欲正常,睡眠正常,体重无明显变化,大便正常,排尿正常。|既往史:18年前因幽门溃疡我院消化科住院治疗,行胃镜活检提示重度不典型增生,口服洛赛克治疗,此后连续2年行4次胃镜检查监测,未发现明显变化;患糖尿病8年,皮下注射胰岛素治疗,平素血糖控制在7-8mmol/l;否认肝炎、结核、疟疾等传染病史,否认高血压、心脏病病史,否认脑血管疾病、精神疾病病史,否认手术史,否认外伤史,否认输血史,否认药物:",
-            "labelCategories": [{
-                "id": 0,
-                "text": "体重",
-                "color": "#eac0a2",
-                "borderColor": "#ddd"
-            }, {
-                "id": 1,
-                "text": "性别",
-                "color": "#619dff",
-                "borderColor": "#3c619d"
-            }, {
-                "id": 2,
-                "text": "发生频率",
-                "color": "#9d61ff",
-                "borderColor": "#613C9D"
-            }, {
-                "id": 3,
-                "text": "部位",
-                "color": "#ff9d61",
-                "borderColor": "#995e3a"
-            }, {
-                "id": 4,
-                "text": "症状",
-                "color": "#aa9d61",
-                "borderColor": "#965f3f"
-            }],
-            "labels": [],
-            "connectionCategories": [{
-                "id": 0,
-                "text": "修饰"
-            },
-            {
-                "id": 1,
-                "text": "限定"
-            },
-            {
-                "id": 2,
-                "text": "是...的动作"
-            }],
-            "connections": []
-        }
-
-        function bindSelHtml() {
-            var labelHtml = "";
-            for (var i = 0; i < obj.labelCategories.length; i++) {
-                labelHtml += '<option value="' + obj.labelCategories[i].id + '">' + obj.labelCategories[i].text + '</option>';
-            }
-            $("#labelCatSel").html(labelHtml);
-
-            var labelCatHtml = "";
-            for (var i = 0; i < obj.connectionCategories.length; i++) {
-                labelCatHtml += '<option value="' + obj.connectionCategories[i].id + '">' + obj.connectionCategories[i].text + '</option>';
-            }
-            $("#curConnectionSel").html(labelCatHtml);
-        }
-        
-        
-        bindSelHtml();
-
-        var segContainer = document.getElementById("svgContainer");
-        var an = $.SvgAnnotator(segContainer, obj, {
-            allowOverlapLabel:false,
-            textSelected: function (startIndex, endIndex) {
-
-                $("#labelCategoriesModal").modal("show");
-
-                $("#submitLabelCat").off("click").on("click", function () {
-
-                    var curLabelCatId = $("#labelCatSel").val();
-                    an.createLabel(parseInt(curLabelCatId), startIndex, endIndex);
-                    $("#labelCategoriesModal").modal("hide");
-                });
-            },
-            labelClicked: function (id) {
-                //
-            },
-            twoLabelsClicked: function (first, second) {
-                $("#connectionCategoriesModal").modal("show");
-
-                $("#submitConnectionCat").off("click").on("click", function () {
-                    var curConnectionCatId = $("#curConnectionSel").val();
-                    an.createConnection(parseInt(curConnectionCatId), first, second);
-                    $("#connectionCategoriesModal").modal("hide");
-                });
-            },
-            labelRightClicked: function (id, x, y) {
-                an.deleteLabel(id);
-            },
-            connectionRightClicked: function (id, x, y) {
-                an.deleteConnection(id);
-            }
-        });
-    </script>
 </body>
+<script src="./jquery-1.11.1.js"></script>
+<script src="./bootstrap/js/bootstrap.min.js"></script>
+<script src="../dist/Case-SvgAnnotator.js"></script>
+<script>
+        
+
+    var originString = "hello world";
+    var obj = {
+        "content": "第2次入院记录|XX,男,63岁,汉族,黑龙江省人,工作单位:XXXX,已婚。于2017年06月1415:34入院,当日采集病史,患者本人陈述病史,可靠。|主诉:反复发作性间断性上腹痛1年。|现病史:1年前无明显诱因开始出现上腹部疼痛,呈烧灼杨钝痛,空腹时明显,夜间为著,进食后可缓解,无明显反酸、嗳气,未行进一步治疗。1年来上述症状反复发作,无明显规律,口服洛赛克等药物治疗有效。近半年来,腹痛症状发作较前频繁,出现反酸。无明显嗳气,无纳差,无放射痛,未出现呕血及黑便。于05月27日就诊于中国日友好医院,行胃镜检查及活检,提示胃多发腺癌。现为行进一步诊治就诊我院,门诊以'胃癌 '收入院。患者目前精神状态良好,体力正常,食欲正常,睡眠正常,体重无明显变化,大便正常,排尿正常。|既往史:18年前因幽门溃疡我院消化科住院治疗,行胃镜活检提示重度不典型增生,口服洛赛克治疗,此后连续2年行4次胃镜检查监测,未发现明显变化;患糖尿病8年,皮下注射胰岛素治疗,平素血糖控制在7-8mmol/l;否认肝炎、结核、疟疾等传染病史,否认高血压、心脏病病史,否认脑血管疾病、精神疾病病史,否认手术史,否认外伤史,否认输血史,否认药物:",
+        "labelCategories": [{
+            "id": 0,
+            "text": "体重",
+            "color": "#eac0a2",
+            "borderColor": "#ddd"
+        }, {
+            "id": 1,
+            "text": "性别",
+            "color": "#619dff",
+            "borderColor": "#3c619d"
+        }, {
+            "id": 2,
+            "text": "发生频率",
+            "color": "#9d61ff",
+            "borderColor": "#613C9D"
+        }, {
+            "id": 3,
+            "text": "部位",
+            "color": "#ff9d61",
+            "borderColor": "#995e3a"
+        }, {
+            "id": 4,
+            "text": "症状",
+            "color": "#aa9d61",
+            "borderColor": "#965f3f"
+        }],
+        "labels": [],
+        "connectionCategories": [{
+            "id": 0,
+            "text": "修饰"
+        },
+        {
+            "id": 1,
+            "text": "限定"
+        },
+        {
+            "id": 2,
+            "text": "是...的动作"
+        }],
+        "connections": []
+    }
+
+    function bindSelHtml() {
+        var labelHtml = "";
+        for (var i = 0; i < obj.labelCategories.length; i++) {
+            labelHtml += '<option value="' + obj.labelCategories[i].id + '">' + obj.labelCategories[i].text + '</option>';
+        }
+        $("#labelCatSel").html(labelHtml);
+
+        var labelCatHtml = "";
+        for (var i = 0; i < obj.connectionCategories.length; i++) {
+            labelCatHtml += '<option value="' + obj.connectionCategories[i].id + '">' + obj.connectionCategories[i].text + '</option>';
+        }
+        $("#curConnectionSel").html(labelCatHtml);
+    }
+    
+    
+    bindSelHtml();
+
+    var segContainer = document.getElementById("svgContainer");
+    var an = $.SvgAnnotator(segContainer, obj, {
+        allowOverlapLabel:false,
+        textSelected: function (startIndex, endIndex) {
+
+            $("#labelCategoriesModal").modal("show");
+
+            $("#submitLabelCat").off("click").on("click", function () {
+
+                var curLabelCatId = $("#labelCatSel").val();
+                an.createLabel(parseInt(curLabelCatId), startIndex, endIndex);
+                $("#labelCategoriesModal").modal("hide");
+            });
+        },
+        labelClicked: function (id) {
+            //
+        },
+        twoLabelsClicked: function (first, second) {
+            $("#connectionCategoriesModal").modal("show");
+
+            $("#submitConnectionCat").off("click").on("click", function () {
+                var curConnectionCatId = $("#curConnectionSel").val();
+                an.createConnection(parseInt(curConnectionCatId), first, second);
+                $("#connectionCategoriesModal").modal("hide");
+            });
+        },
+        labelRightClicked: function (id, x, y) {
+            an.deleteLabel(id);
+        },
+        connectionRightClicked: function (id, x, y) {
+            an.deleteConnection(id);
+        }
+    });
+</script>
 </html>
