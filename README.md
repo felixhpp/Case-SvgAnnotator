@@ -6,6 +6,8 @@
 [![version](https://img.shields.io/badge/npm%20version-1.2.1-brightgreen.svg)](https://www.npmjs.com/package/case-annotator)
 [![GitHub release](https://img.shields.io/github/release/felixhpp/Case-SvgAnnotator.svg)](https://github.com/felixhpp/Case-SvgAnnotator/releases)
 
+暂时不支持IE浏览器。
+
 ## 声明
 
 本项目是对开源项目[poplar](https://github.com/synyi/poplar)扩展的一个jQuery插件版本，方便不是使用ES6的开发环境中调用，并优化了插件在谷歌浏览器的兼容性问题。如果您的开发环境为ES6，建议去看[poplar](https://github.com/synyi/poplar)。
