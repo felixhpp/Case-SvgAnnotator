@@ -43,24 +43,25 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 `options`是一个`object`对象，选项通常作为参数传递给init或attach动作。
 
 ```
- {
-    maxLineWidth: 80,
-    textSelected: function (startIndex, endIndex) {
+var options = {
+            maxLineWidth: 80,
+            textSelected: function (startIndex, endIndex) {
 
-    },
-    labelClicked: function (id) {
+            },
+            labelClicked: function (id) {
 
-    },
-    twoLabelsClicked: function (first, second) {
+            },
+            twoLabelsClicked: function (first, second) {
 
-    },
-    labelRightClicked: function (id, x, y) {
+            },
+            labelRightClicked: function (id, x, y) {
+		
+            },
+            connectionRightClicked: function (id, x, y) {
+	
+            }
+        }
 
-    },
-    connectionRightClicked: function (id, x, y) {
-
-    }
-}
 
 ```
 
