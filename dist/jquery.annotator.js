@@ -17314,6 +17314,12 @@ var Line;
             }
             return this.startIndex <= label.startIndex && label.endIndex <= this.endIndex;
         };
+        Entity.prototype.isConnectionInThisLine = function (connection) {
+            if (typeof connection === 'number') {
+                connection = this.root.connectionRepo.get(connection);
+            }
+            return this.isLabelInThisLine(connection.sameLineLabel);
+        };
         return Entity;
     }());
     Line.Entity = Entity;
@@ -17502,134 +17508,58 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-    if (m) return m.call(o);
-    return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-var operators_1 = require("rxjs/operators");
-var Repository_1 = require("../../Infrastructure/Repository");
 var TopContextUser_1 = require("./TopContextUser");
-var rxjs_1 = require("rxjs");
+var Repository_1 = require("../../Infrastructure/Repository");
+var operators_1 = require("rxjs/operators");
 var Assert_1 = require("../../Infrastructure/Assert");
 var ConnectionView;
 (function (ConnectionView) {
     var Entity = /** @class */ (function (_super) {
         __extends(Entity, _super);
-        function Entity(id, store, root) {
+        function Entity(id, store, context) {
             var _this = _super.call(this) || this;
             _this.id = id;
             _this.store = store;
-            _this.root = root;
+            _this.context = context;
             _this.svgElement = null;
             _this.textElement = null;
             _this.lineElement = null;
-            _this.rerenderLinesSubscription = null;
-            var readyToRender;
-            if (!_this.priorRendered && !_this.posteriorRendered) {
-                readyToRender = _this.root.labelViewRepo.rendered$.pipe(operators_1.filter(function (it) { return it === _this.store.mayNotSameLineLabel.id; }));
-            }
-            else if (_this.priorRendered && !_this.posteriorRendered) {
-                readyToRender = _this.root.labelViewRepo.rendered$.pipe(operators_1.filter(function (it) { return it === _this.store.mayNotSameLineLabel.id; }));
-            }
-            else if (!_this.priorRendered && _this.posteriorRendered) {
-                readyToRender = _this.root.labelViewRepo.rendered$.pipe(operators_1.filter(function (it) { return it === _this.store.sameLineLabel.id; }));
-            }
-            else {
-                readyToRender = rxjs_1.of(1);
-            }
-            readyToRender.pipe(operators_1.first()).subscribe(function () {
-                if (_this.inline) {
-                    _this.layer = Math.max(_this.prior.layer, _this.posterior.layer) + 1;
-                }
-                else {
-                    _this.layer = _this.prior.layer + 1;
-                }
-                _this.context.attachTo.addChild(_this);
-            });
+            _this.positionChangedSubscription = null;
+            _this.rerenderedSubscription = null;
             return _this;
         }
-        Object.defineProperty(Entity.prototype, "context", {
+        Object.defineProperty(Entity.prototype, "x", {
             get: function () {
-                return this.root.labelViewRepo.get(this.store.sameLineLabel.id).context;
+                return (this.from.annotationElementBox.container.x + this.to.annotationElementBox.container.x + this.to.annotationElementBox.container.width - this.width) / 2;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Entity.prototype, "from", {
             get: function () {
-                return this.root.labelViewRepo.get(this.store.from.id);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "fromRendered", {
-            get: function () {
-                return this.root.labelViewRepo.has(this.store.from.id) && this.from.rendered;
+                return this.context.attachTo.root.labelViewRepo.get(this.store.from.id);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Entity.prototype, "to", {
             get: function () {
-                return this.root.labelViewRepo.get(this.store.to.id);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "toRendered", {
-            get: function () {
-                return this.root.labelViewRepo.has(this.store.to.id) && this.to.rendered;
+                return this.context.attachTo.root.labelViewRepo.get(this.store.to.id);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Entity.prototype, "prior", {
             get: function () {
-                return this.root.labelViewRepo.get(this.store.sameLineLabel.id);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "priorRendered", {
-            get: function () {
-                return this.root.labelViewRepo.has(this.store.sameLineLabel.id) && this.prior.rendered;
+                return this.context.attachTo.root.labelViewRepo.get(this.store.sameLineLabel.id);
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Entity.prototype, "posterior", {
             get: function () {
-                return this.root.labelViewRepo.get(this.store.mayNotSameLineLabel.id);
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "posteriorRendered", {
-            get: function () {
-                return this.root.labelViewRepo.has(this.store.mayNotSameLineLabel.id) && this.posterior.rendered;
+                return this.context.attachTo.root.labelViewRepo.get(this.store.mayNotSameLineLabel.id);
             },
             enumerable: true,
             configurable: true
@@ -17641,30 +17571,6 @@ var ConnectionView;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Entity.prototype, "width", {
-            get: function () {
-                if (this.textElement === null) {
-                    this.textElement = this.root.svgDoc.text(this.category.text).font({ size: 12 });
-                }
-                return this.textElement.bbox().width;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "x", {
-            get: function () {
-                return (this.from.x + this.to.x + this.to.width - this.width) / 2;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "globalY", {
-            get: function () {
-                return this.textElement.node.getBoundingClientRect().top - this.textElement.doc().node.getBoundingClientRect().top;
-            },
-            enumerable: true,
-            configurable: true
-        });
         Object.defineProperty(Entity.prototype, "inline", {
             get: function () {
                 return this.posterior.context === this.prior.context;
@@ -17672,17 +17578,13 @@ var ConnectionView;
             enumerable: true,
             configurable: true
         });
-        Entity.prototype.render = function () {
+        Entity.prototype.initPosition = function () {
+            this.width = this.textElement.bbox().width;
+        };
+        Entity.prototype.preRender = function () {
             var _this = this;
-            Assert_1.assert(this.svgElement === null, 'render ConnectionView twice');
             this.svgElement = this.context.svgElement.group();
-            this.svgElement.rect(this.width, 12).y(5).fill('white');
-            if (this.textElement === null) {
-                this.textElement = this.svgElement.text(this.category.text).font({ size: 12 });
-            }
-            else {
-                this.svgElement.add(this.textElement);
-            }
+            this.textElement = this.svgElement.text(this.category.text).font({ size: 12 });
             this.textElement.style({
                 '-webkit-user-select': 'none',
                 '-khtml-user-select': 'none',
@@ -17694,40 +17596,70 @@ var ConnectionView;
                 _this.context.attachTo.root.root.emit('connectionRightClicked', _this.id, e.clientX, e.clientY);
                 e.preventDefault();
             });
+            this.svgElement.addClass('connection-view');
+            // to deceive svg.js not to call bbox when call x() and y()
+            // bad for svg.js
+            this.svgElement.attr('x', "");
+            this.svgElement.attr('y', "");
+            this.textElement.attr('x', "");
+            this.textElement.attr('y', "");
+        };
+        Entity.prototype.render = function () {
+            this.svgElement.rect(this.width, 12).y(5).fill('white').back();
             this.svgElement.x(this.x);
             this.svgElement.y(this.y);
-            this.svgElement.addClass('connection-view');
-            this.renderLines();
         };
         Entity.prototype.rerenderLines = function () {
-            Assert_1.assert(this.lineElement !== null);
+            Assert_1.assert(this.svgElement !== null, "should already unsub");
+            this.svgElement.x(this.x);
+            this.svgElement.y(this.y);
             this.lineElement.remove();
-            this.lineElement = null;
             this.renderLines();
+        };
+        Entity.prototype.eliminateOverlapping = function () {
+            if (this.prior.context === this.posterior.context) {
+                this.layer = Math.max(this.prior.layer, this.posterior.layer) + 1;
+            }
+            else {
+                this.layer = this.prior.layer + 1;
+            }
+            _super.prototype.eliminateOverlapping.call(this);
+        };
+        Entity.prototype.postRender = function () {
+            if (this.lineElement !== null) {
+                this.lineElement.remove();
+            }
+            this.renderLines();
+        };
+        Entity.prototype.remove = function () {
+            this.textElement.remove();
+            this.lineElement.remove();
+            this.svgElement.remove();
+            if (this.positionChangedSubscription !== null)
+                this.positionChangedSubscription.unsubscribe();
+            this.rerenderedSubscription.unsubscribe();
+            this.textElement = null;
+            this.lineElement = null;
+            this.svgElement = null;
+            // this.positionChangedSubscription = null;
+            // this.rerenderedSubscription = null;
         };
         Entity.prototype.renderLines = function () {
             var _this = this;
-            if (!this.posteriorRendered || !this.priorRendered) {
-                return;
-            }
-            if (this.lineElement !== null) {
-                this.rerenderLines();
-                return;
-            }
             var thisY = 0;
             var fromY = 0;
             var toY = 0;
             var context = null;
             if (this.inline) {
-                fromY = this.from.y - 6;
+                fromY = this.from.y - 5;
                 thisY = this.y + 20.8 - 11;
-                toY = this.to.y - 6;
+                toY = this.to.y - 5;
                 context = this.context.svgElement;
             }
             else {
-                fromY = this.from.globalY;
-                thisY = this.globalY + 6;
-                toY = this.to.globalY;
+                fromY = this.from.y + this.from.context.y - 4;
+                thisY = this.y + this.context.y + 11;
+                toY = this.to.y + this.to.context.y - 5;
                 context = this.svgElement.doc();
             }
             if (this.from.annotationElementBox.container.x < this.to.annotationElementBox.container.x) {
@@ -17740,14 +17672,11 @@ var ConnectionView;
                 add.polyline('0,0 5,2.5 0,5 0.2,2.5');
             });
             this.lineElement.back();
-            if (this.rerenderLinesSubscription !== null) {
-                this.rerenderLinesSubscription.unsubscribe();
-            }
             this.lineElement.on('mouseover', function () {
-                _this.lineElement.stroke({ width: 2, color: 'red' });
+                _this.lineElement.stroke({ width: 1.5, color: 'red' });
             });
             this.svgElement.on('mouseover', function () {
-                _this.lineElement.stroke({ width: 2, color: 'red' });
+                _this.lineElement.stroke({ width: 1.5, color: 'red' });
             });
             this.lineElement.on('mouseout', function () {
                 _this.lineElement.stroke({ width: 1, color: 'black' });
@@ -17755,16 +17684,18 @@ var ConnectionView;
             this.svgElement.on('mouseout', function () {
                 _this.lineElement.stroke({ width: 1, color: 'black' });
             });
-            this.rerenderLinesSubscription = this.posterior.context.positionChanged$.subscribe(function () { return _this.rerenderLines(); });
-        };
-        Entity.prototype.removeElement = function () {
-            this.rerenderLinesSubscription.unsubscribe();
-            this.svgElement.remove();
-            if (this.lineElement)
-                this.lineElement.remove();
-            this.lineElement = null;
-            this.textElement = null;
-            this.svgElement = null;
+            if (this.positionChangedSubscription !== null) {
+                this.positionChangedSubscription.unsubscribe();
+            }
+            if (this.rerenderedSubscription !== null) {
+                this.rerenderedSubscription.unsubscribe();
+            }
+            if (this.posterior.context !== this.prior.context)
+                this.positionChangedSubscription = this.posterior.context.positionChanged$.subscribe(function () {
+                    Assert_1.assert(_this.svgElement !== null, "should already unsub");
+                    _this.rerenderLines();
+                });
+            this.rerenderedSubscription = this.context.attachTo.root.lineViewRepo.rerendered$.pipe(operators_1.filter(function (it) { return it === _this.posterior.context.attachTo.id; })).subscribe(function () { return _this.rerenderLines(); });
         };
         return Entity;
     }(TopContextUser_1.TopContextUser));
@@ -17779,40 +17710,16 @@ var ConnectionView;
                 key = key.id;
             }
             if (this.has(key)) {
-                try {
-                    this.get(key).context.attachTo.removeChild(this.get(key));
-                }
-                catch (e) {
-                }
-                this.get(key).removeElement();
+                this.get(key).remove();
             }
             return _super.prototype.delete.call(this, key);
         };
         return Repository;
     }(Repository_1.Base.Repository));
     ConnectionView.Repository = Repository;
-    function constructAll(root) {
-        var e_1, _a;
-        var result = [];
-        try {
-            for (var _b = __values(root.store.connectionRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), id = _d[0], entity = _d[1];
-                result.push(new Entity(id, entity, root));
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-        return result;
-    }
-    ConnectionView.constructAll = constructAll;
 })(ConnectionView = exports.ConnectionView || (exports.ConnectionView = {}));
 
-},{"../../Infrastructure/Assert":205,"../../Infrastructure/Repository":206,"./TopContextUser":218,"rxjs":3,"rxjs/operators":200}],215:[function(require,module,exports){
+},{"../../Infrastructure/Assert":205,"../../Infrastructure/Repository":206,"./TopContextUser":218,"rxjs/operators":200}],215:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17828,10 +17735,8 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-var Repository_1 = require("../../Infrastructure/Repository");
-var rxjs_1 = require("rxjs");
 var TopContextUser_1 = require("./TopContextUser");
-var ConnectionView_1 = require("./ConnectionView");
+var Repository_1 = require("../../Infrastructure/Repository");
 var LabelView;
 (function (LabelView) {
     var TEXT_CONTAINER_PADDING = 3;
@@ -17845,14 +17750,27 @@ var LabelView;
             _this.context = context;
             _this.svgElement = null;
             _this.textElement = null;
-            _this._highlightElementBox = null;
-            _this._annotationElementBox = null;
+            _this.textWidth = null;
             _this.layer = 1;
             return _this;
         }
         Object.defineProperty(Entity.prototype, "x", {
             get: function () {
                 return Math.min(this.highlightElementBox.x, this.annotationElementBox.container.x);
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "globalX", {
+            get: function () {
+                return this.annotationElement.children()[0].node.getBoundingClientRect().x + this.annotationElementBox.container.width / 2;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "globalY", {
+            get: function () {
+                return this.annotationElement.children()[0].node.getBoundingClientRect().y + this.textElement.node.clientHeight / 2;
             },
             enumerable: true,
             configurable: true
@@ -17866,66 +17784,37 @@ var LabelView;
         });
         Object.defineProperty(Entity.prototype, "highlightElementBox", {
             get: function () {
-                if (this._highlightElementBox === null) {
-                    var startIndexInLine = this.store.startIndex - this.context.attachTo.store.startIndex;
-                    var endIndexInLine = this.store.endIndex - this.context.attachTo.store.startIndex;
-                    var parent_1 = this.context.attachTo;
-                    try {
-                        var firstCharX = parent_1.xCoordinateOfChar[startIndexInLine];
-                        if (isNaN(firstCharX) || isNaN(parent_1.xCoordinateOfChar[endIndexInLine])) {
-                            throw Error;
-                        }
-                        this._highlightElementBox = {
-                            x: firstCharX,
-                            y: parent_1.y0,
-                            width: parent_1.xCoordinateOfChar[endIndexInLine] - firstCharX,
-                            height: 20.8
-                        };
-                    }
-                    catch (e) {
-                        var parentNode = this.context.attachTo.svgElement.node;
-                        var firstCharBox = parentNode.getExtentOfChar(startIndexInLine);
-                        var lastCharBox = parentNode.getExtentOfChar(endIndexInLine - 1);
-                        this._highlightElementBox = {
-                            x: firstCharBox.x,
-                            y: firstCharBox.y,
-                            width: lastCharBox.x - firstCharBox.x + lastCharBox.width,
-                            height: firstCharBox.height
-                        };
-                    }
-                }
-                return this._highlightElementBox;
+                var startIndexInLine = this.store.startIndex - this.context.attachTo.store.startIndex;
+                var endIndexInLine = this.store.endIndex - this.context.attachTo.store.startIndex;
+                var parent = this.context.attachTo;
+                var firstCharX = parent.xCoordinateOfChar[startIndexInLine];
+                var endCharX = parent.xCoordinateOfChar[endIndexInLine];
+                return {
+                    x: firstCharX,
+                    y: parent.y,
+                    width: endCharX - firstCharX,
+                    height: 20
+                };
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Entity.prototype, "annotationElementBox", {
             get: function () {
-                if (this._annotationElementBox === null) {
-                    var highlightElementBox = this.highlightElementBox;
-                    var middleX = highlightElementBox.x + highlightElementBox.width / 2;
-                    if (this.textElement === null) {
-                        this.preRender(this.context.attachTo.root.svgDoc);
+                var highlightElementBox = this.highlightElementBox;
+                var middleX = highlightElementBox.x + highlightElementBox.width / 2;
+                var textX = middleX - this.textWidth / 2;
+                return {
+                    text: {
+                        x: textX,
+                        width: this.textWidth
+                    },
+                    container: {
+                        x: textX - TEXT_CONTAINER_PADDING,
+                        y: highlightElementBox.y,
+                        width: this.textWidth + 2 * TEXT_CONTAINER_PADDING
                     }
-                    // 使用document.getElementById().getBoundingClientRect().width 避免在谷歌浏览器下width获取不包含padding
-                    // let textWidth = (this.textElement as any).width;
-                    var textWidth = document.getElementById(this.textElement.id()).getBoundingClientRect().width;
-                    var containerWidth = textWidth + 2 * TEXT_CONTAINER_PADDING;
-                    var textX = middleX - textWidth / 2;
-                    var containerX = textX - TEXT_CONTAINER_PADDING;
-                    this._annotationElementBox = {
-                        text: {
-                            x: textX,
-                            width: textWidth
-                        },
-                        container: {
-                            x: containerX,
-                            y: highlightElementBox.y,
-                            width: containerWidth
-                        }
-                    };
-                }
-                return this._annotationElementBox;
+                };
             },
             enumerable: true,
             configurable: true
@@ -17937,37 +17826,6 @@ var LabelView;
             enumerable: true,
             configurable: true
         });
-        Object.defineProperty(Entity.prototype, "rendered", {
-            get: function () {
-                return this.svgElement !== null;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Entity.prototype.render = function () {
-            try {
-                this.svgElement = this.context.svgElement.group();
-                this.renderHighlight();
-                this.renderAnnotation();
-                this.context.attachTo.root.labelViewRepo.rendered(this.id);
-            }
-            catch (e) {
-                console.log(this.id);
-            }
-        };
-        Entity.prototype.preRender = function (context) {
-            this.textElement = context.text(this.category.text).font({ size: TEXT_SIZE });
-            this.textElement.width = this.textElement.node.clientWidth;
-        };
-        Entity.prototype.removeElement = function () {
-            this.svgElement.remove();
-            this.svgElement = null;
-            this._annotationElementBox = null;
-            this.annotationElement = null;
-            this._highlightElementBox = null;
-            this.highLightElement = null;
-            this.textElement = null;
-        };
         /**
          * Thanks to Alex Hornbake (function for generate curly bracket path)
          * @see http://bl.ocks.org/alexhornbake/6005176
@@ -17997,9 +17855,37 @@ var LabelView;
                 width: 1
             });
         };
+        Entity.prototype.initPosition = function () {
+            this.textWidth = this.textElement.node.clientWidth;
+            // 使用document.getElementById().getBoundingClientRect().width 避免在谷歌浏览器下width获取不包含padding
+            //this.textWidth = document.getElementById(this.textElement.id()).getBoundingClientRect().width;
+        };
+        Entity.prototype.preRender = function () {
+            this.svgElement = this.context.svgElement.group();
+            this.annotationElement = this.svgElement.group().back();
+            this.textElement = this.annotationElement.text(this.category.text).font({ size: TEXT_SIZE });
+            // to deceive svg.js not to call bbox when call x() and y()
+            // bad for svg.js
+            this.svgElement.attr('x', "");
+            this.svgElement.attr('y', "");
+            this.annotationElement.attr('x', "");
+            this.annotationElement.attr('y', "");
+            this.textElement.attr('x', "");
+            this.textElement.attr('y', "");
+        };
+        Entity.prototype.removeElement = function () {
+            this.svgElement.remove();
+            this.svgElement = null;
+            this.textElement.remove();
+            this.textElement = null;
+        };
+        Entity.prototype.render = function () {
+            this.renderHighlight();
+            this.renderAnnotation();
+        };
         Entity.prototype.renderHighlight = function () {
             var box = this.highlightElementBox;
-            this.highLightElement = this.svgElement.rect(box.width, box.height).y(0);
+            this.highLightElement = this.svgElement.rect(box.width, box.height);
             this.highLightElement.fill({
                 color: this.category.color,
                 opacity: 0.5
@@ -18009,17 +17895,16 @@ var LabelView;
             var _this = this;
             var highLightBox = this.highlightElementBox;
             var annotationBox = this.annotationElementBox;
-            this.annotationElement = this.svgElement.group().back();
             this.annotationElement.rect(annotationBox.container.width, TEXT_SIZE + TEXT_CONTAINER_PADDING * 2)
                 .radius(3, 3)
                 .fill({
                 color: this.category.color,
             })
-                .stroke(this.category.borderColor)
-                .x(annotationBox.container.x).y(-8);
-            this.bracket(highLightBox.x + highLightBox.width, 20.8, highLightBox.x, 20.8, 8);
-            this.annotationElement.put(this.textElement);
-            this.textElement.x(annotationBox.text.x).y(-TEXT_SIZE - TEXT_CONTAINER_PADDING + 9.5);
+                .stroke(this.category.borderColor).back();
+            this.annotationElement.x(annotationBox.container.x);
+            this.textElement.front();
+            this.textElement.x(3).y(-2);
+            this.bracket(highLightBox.width - (annotationBox.container.x - highLightBox.x), 26, 0 - (annotationBox.container.x - highLightBox.x), 26, 8);
             this.textElement.style({
                 '-webkit-user-select': 'none',
                 '-khtml-user-select': 'none',
@@ -18027,7 +17912,7 @@ var LabelView;
                 '-ms-user-select': 'none',
                 'user-select': 'none',
             });
-            this.annotationElement.y(this.y);
+            this.annotationElement.y(this.y - 5);
             this.annotationElement.style({ cursor: 'pointer' });
             this.annotationElement.addClass('label-view');
             this.annotationElement.on('click', function (e) {
@@ -18039,58 +17924,19 @@ var LabelView;
                 e.preventDefault();
             });
         };
-        Object.defineProperty(Entity.prototype, "globalY", {
-            get: function () {
-                return this.annotationElement.node.getBoundingClientRect().top - this.annotationElement.doc().node.getBoundingClientRect().top;
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(Entity.prototype, "globalX", {
-            get: function () {
-                return this.annotationElement.node.getBoundingClientRect().left - this.annotationElement.doc().node.getBoundingClientRect().left;
-            },
-            enumerable: true,
-            configurable: true
-        });
         return Entity;
     }(TopContextUser_1.TopContextUser));
     LabelView.Entity = Entity;
     var Repository = /** @class */ (function (_super) {
         __extends(Repository, _super);
         function Repository(root) {
-            var _this = _super.call(this, root) || this;
-            _this.rendered$ = rxjs_1.fromEvent(_this.eventEmitter, 'rendered');
-            return _this;
+            return _super.call(this, root) || this;
         }
-        Repository.prototype.rendered = function (id) {
-            this.eventEmitter.emit('rendered', id);
-        };
         Repository.prototype.delete = function (key) {
-            var _this = this;
             if (typeof key !== "number") {
                 key = key.id;
             }
             if (this.has(key)) {
-                try {
-                    var theEntityToRemove_1 = this.get(key);
-                    theEntityToRemove_1.context.attachTo.removeChild(this.get(key));
-                    theEntityToRemove_1.store.allConnections.forEach(function (it) {
-                        if (_this.root.connectionViewRepo.has(it.id)) {
-                            var connectionView = _this.root.connectionViewRepo.get(it.id);
-                            if (!connectionView.inline && connectionView.prior !== theEntityToRemove_1) {
-                                theEntityToRemove_1.removeElement();
-                                _super.prototype.delete.call(_this, key);
-                                _this.root.connectionViewRepo.delete(connectionView);
-                                _this.root.connectionViewRepo.add(new ConnectionView_1.ConnectionView.Entity(connectionView.id, connectionView.store, _this.root));
-                                return true;
-                            }
-                            _this.root.connectionViewRepo.delete(connectionView);
-                        }
-                    });
-                }
-                catch (e) {
-                }
                 if (this.has(key))
                     this.get(key).removeElement();
             }
@@ -18101,7 +17947,7 @@ var LabelView;
     LabelView.Repository = Repository;
 })(LabelView = exports.LabelView || (exports.LabelView = {}));
 
-},{"../../Infrastructure/Repository":206,"./ConnectionView":214,"./TopContextUser":218,"rxjs":3}],216:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206,"./TopContextUser":218}],216:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18116,6 +17962,16 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __values = (this && this.__values) || function (o) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
+    if (m) return m.call(o);
+    return {
+        next: function () {
+            if (o && i >= o.length) o = void 0;
+            return { value: o && o[i++], done: !o };
+        }
+    };
+};
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -18132,26 +17988,11 @@ var __read = (this && this.__read) || function (o, n) {
     }
     return ar;
 };
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
-};
-var __values = (this && this.__values) || function (o) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
-    if (m) return m.call(o);
-    return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var Repository_1 = require("../../Infrastructure/Repository");
-var operators_1 = require("rxjs/operators");
-var LabelView_1 = require("./LabelView");
-var ConnectionView_1 = require("./ConnectionView");
 var TopContext_1 = require("./TopContext");
+var operators_1 = require("rxjs/operators");
+var rxjs_1 = require("rxjs");
 var LineView;
 (function (LineView) {
     var Entity = /** @class */ (function () {
@@ -18161,20 +18002,81 @@ var LineView;
             this.store = store;
             this.root = root;
             this.svgElement = null;
+            this.topContext = null;
+            this.xCoordinateOfChar = [];
             this.topContext = new TopContext_1.TopContext(this);
             root.store.lineRepo.updated$.pipe(operators_1.filter(function (it) { return it === _this.id; })).subscribe(function () {
                 _this.store = root.store.lineRepo.get(id);
                 _this.rerender();
             });
-            root.store.labelRepo.created$
-                .pipe(operators_1.filter(function (it) { return _this.store.isLabelInThisLine(it); }))
-                .subscribe(function (it) {
-                var newLabelView = new LabelView_1.LabelView.Entity(it, _this.root.store.labelRepo.get(it), _this.topContext);
-                _this.root.labelViewRepo.add(newLabelView);
-                _this.addChild(newLabelView);
-            });
-            this.xCoordinateOfChar = [];
         }
+        Object.defineProperty(Entity.prototype, "prev", {
+            get: function () {
+                var firstIterator = this.root.lineViewRepo[Symbol.iterator]();
+                var secondIterator = this.root.lineViewRepo[Symbol.iterator]();
+                var id = secondIterator.next().value[0];
+                var result = null;
+                while (id !== this.id) {
+                    result = firstIterator.next().value[1];
+                    id = secondIterator.next().value[0];
+                }
+                return result;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "isFirst", {
+            get: function () {
+                var e_1, _a;
+                try {
+                    for (var _b = __values(this.root.lineViewRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
+                        var _d = __read(_c.value, 2), id = _d[0], _ = _d[1];
+                        if (id < this.id) {
+                            return false;
+                        }
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Entity.prototype, "isLast", {
+            get: function () {
+                var e_2, _a;
+                try {
+                    for (var _b = __values(this.root.lineViewRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
+                        var _d = __read(_c.value, 2), id = _d[0], _ = _d[1];
+                        if (id > this.id) {
+                            return false;
+                        }
+                    }
+                }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                finally {
+                    try {
+                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                }
+                return true;
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Entity.prototype.remove = function () {
+            var dy = -this.topContext.height - 20.8;
+            this.topContext.remove();
+            this.svgElement.node.remove();
+            this.layoutAfterSelf(dy);
+        };
         Entity.prototype.render = function (context) {
             var _this = this;
             this.svgElement = context.tspan(this.store.text).newLine();
@@ -18182,41 +18084,17 @@ var LineView;
             this.svgElement.on('mouseup', function () {
                 _this.root.root.textSelectionHandler.textSelected();
             });
-            __spread(this.topContext.elements).forEach(function (it) { return it.eliminateOverlapping(); });
-            this.svgElement.dy(this.topContext.height + 20.8);
-            this.topContext.render(this.svgElement.doc());
+        };
+        Entity.prototype.renderTopContext = function () {
+            this.topContext.render();
         };
         Entity.prototype.layout = function (dy) {
-            var e_1, _a;
-            // line's layout will be handled by svg.js itself
-            this.topContext.layout(dy);
-            try {
-                for (var _b = __values(this.root.lineViewRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var _d = __read(_c.value, 2), id = _d[0], _ = _d[1];
-                    if (id > this.id) {
-                        return;
-                    }
-                }
+            if (dy === void 0) { dy = this.topContext.height + 20.8; }
+            // line itself's layout will be handled by svg.js itself
+            this.svgElement.dy(dy);
+            if (this.isLast) {
+                this.root.resize();
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            this.root.resize();
-        };
-        Entity.prototype.addChild = function (element) {
-            var originHeight = this.topContext.height;
-            this.topContext.elements.add(element);
-            element.eliminateOverlapping();
-            var newHeight = this.topContext.height;
-            this.svgElement.dy(newHeight + 20.8);
-            var dy = newHeight - originHeight;
-            this.layout(dy);
-            element.render();
-            this.layoutAfterSelf(dy);
         };
         Object.defineProperty(Entity.prototype, "rendered", {
             get: function () {
@@ -18225,111 +18103,37 @@ var LineView;
             enumerable: true,
             configurable: true
         });
-        Entity.prototype.removeElement = function () {
-            var e_2, _a;
-            try {
-                for (var _b = __values(this.topContext.elements), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var element = _c.value;
-                    if (element instanceof LabelView_1.LabelView.Entity) {
-                        this.root.labelViewRepo.delete(element);
-                    }
-                }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_2) throw e_2.error; }
-            }
-            var dy = -20.8;
-            this.topContext.removeElement();
-            // It's sad that svg.js doesn't support `this.svgElement.remove()`
-            this.svgElement.node.remove();
-            this.layoutAfterSelf(dy);
-        };
-        Entity.prototype.removeChild = function (element) {
-            var originHeight = this.topContext.height;
-            this.topContext.elements.delete(element);
-            var newHeight = this.topContext.height;
-            this.svgElement.dy(newHeight + 20.8);
-            var dy = newHeight - originHeight;
-            this.layout(dy);
-            this.layoutAfterSelf(dy);
-        };
-        Entity.prototype.rerender = function () {
-            var _this = this;
-            var e_3, _a;
-            try {
-                for (var _b = __values(this.topContext.elements), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var element = _c.value;
-                    if (element instanceof LabelView_1.LabelView.Entity) {
-                        this.root.labelViewRepo.delete(element);
-                    }
-                }
-            }
-            catch (e_3_1) { e_3 = { error: e_3_1 }; }
-            finally {
-                try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                }
-                finally { if (e_3) throw e_3.error; }
-            }
-            this.topContext.removeElement();
-            var originHeight = 0;
-            this.topContext = new TopContext_1.TopContext(this);
-            var labels = this.store.labelsInThisLine;
-            labels.map(function (label) {
-                var e_4, _a;
-                var newLabelView = new LabelView_1.LabelView.Entity(label.id, label, _this.topContext);
-                _this.root.labelViewRepo.add(newLabelView);
-                _this.topContext.elements.add(newLabelView);
-                try {
-                    for (var _b = __values(label.sameLineConnections), _c = _b.next(); !_c.done; _c = _b.next()) {
-                        var connection = _c.value;
-                        if (!_this.root.connectionViewRepo.has(connection.id)) {
-                            var newConnectionView = new ConnectionView_1.ConnectionView.Entity(connection.id, connection, _this.root);
-                            _this.root.connectionViewRepo.add(newConnectionView);
-                        }
-                    }
-                }
-                catch (e_4_1) { e_4 = { error: e_4_1 }; }
-                finally {
-                    try {
-                        if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-                    }
-                    finally { if (e_4) throw e_4.error; }
-                }
-            });
-            this.svgElement.clear();
-            this.svgElement.plain(this.store.text);
-            __spread(this.topContext.elements).forEach(function (it) { return it.eliminateOverlapping(); });
-            var newHeight = this.topContext.height;
-            var dy = newHeight - originHeight;
-            this.svgElement.dy(newHeight + 20.8);
-            this.topContext.render(this.svgElement.doc());
-            this.layoutAfterSelf(dy);
-        };
         Entity.prototype.layoutAfterSelf = function (dy) {
             for (var id = this.id + 1; id < this.root.lineViewRepo.length; ++id) {
                 if (this.root.lineViewRepo.has(id) && this.root.lineViewRepo.get(id).rendered) {
-                    this.root.lineViewRepo.get(id).layout(dy);
+                    this.root.lineViewRepo.get(id).topContext.layout(dy);
                 }
             }
         };
-        Entity.prototype.preRender = function (context) {
-            this.svgElement = context.tspan(this.store.text).newLine();
-        };
-        Entity.prototype.setXCoordinateOfChars = function () {
-            this.y0 = this.svgElement.node.getExtentOfChar(0).y;
+        Entity.prototype.calculateInitialCharPositions = function () {
+            this.xCoordinateOfChar = [];
+            this.y = this.svgElement.node.getExtentOfChar(0).y;
             for (var i = 0; i < this.store.text.length; ++i) {
                 this.xCoordinateOfChar.push(this.svgElement.node.getExtentOfChar(i).x);
             }
             var last = this.svgElement.node.getExtentOfChar(this.store.text.length - 1);
             this.xCoordinateOfChar.push(last.x + last.width);
         };
-        Entity.prototype.removePreRenderElement = function () {
-            this.svgElement = null;
+        Entity.prototype.rerender = function () {
+            var oldHeight = this.topContext.height;
+            this.topContext.remove();
+            this.svgElement.clear();
+            this.svgElement.plain(this.store.text);
+            this.calculateInitialCharPositions();
+            this.topContext = new TopContext_1.TopContext(this);
+            this.topContext.preRender(this.svgElement.doc());
+            this.topContext.initPosition();
+            this.layout();
+            this.layoutAfterSelf(this.topContext.height - oldHeight);
+            this.renderTopContext();
+            this.topContext.layout(null);
+            this.topContext.postRender();
+            this.topContext.attachTo.root.lineViewRepo.rerendered(this.id);
         };
         return Entity;
     }());
@@ -18337,14 +18141,20 @@ var LineView;
     var Repository = /** @class */ (function (_super) {
         __extends(Repository, _super);
         function Repository(root) {
-            return _super.call(this, root) || this;
+            var _this = _super.call(this, root) || this;
+            _this.rerendered$ = null;
+            _this.rerendered$ = rxjs_1.fromEvent(_this.eventEmitter, "rerendered");
+            return _this;
         }
+        Repository.prototype.rerendered = function (id) {
+            this.eventEmitter.emit("rerendered", id);
+        };
         Repository.prototype.delete = function (key) {
             if (typeof key !== "number") {
                 key = key.id;
             }
             if (this.has(key)) {
-                this.get(key).removeElement();
+                this.get(key).remove();
             }
             return _super.prototype.delete.call(this, key);
         };
@@ -18352,7 +18162,7 @@ var LineView;
     }(Repository_1.Base.Repository));
     LineView.Repository = Repository;
     function constructAll(root) {
-        var e_5, _a;
+        var e_3, _a;
         var result = [];
         try {
             for (var _b = __values(root.store.lineRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
@@ -18360,19 +18170,19 @@ var LineView;
                 result.push(new Entity(id, entity, root));
             }
         }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
                 if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
             }
-            finally { if (e_5) throw e_5.error; }
+            finally { if (e_3) throw e_3.error; }
         }
         return result;
     }
     LineView.constructAll = constructAll;
 })(LineView = exports.LineView || (exports.LineView = {}));
 
-},{"../../Infrastructure/Repository":206,"./ConnectionView":214,"./LabelView":215,"./TopContext":217,"rxjs/operators":200}],217:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206,"./TopContext":217,"rxjs":3,"rxjs/operators":200}],217:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -18384,98 +18194,266 @@ var __values = (this && this.__values) || function (o) {
         }
     };
 };
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spread = (this && this.__spread) || function () {
-    for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
-    return ar;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 var events_1 = require("events");
 var rxjs_1 = require("rxjs");
+var LabelView_1 = require("./LabelView");
+var ConnectionView_1 = require("./ConnectionView");
+var Assert_1 = require("../../Infrastructure/Assert");
+var operators_1 = require("rxjs/operators");
 var TopContext = /** @class */ (function () {
     function TopContext(attachTo) {
+        var e_1, _a, e_2, _b;
+        var _this = this;
         this.attachTo = attachTo;
+        this.labelCreatedSubscription = null;
+        this.labelDeletedSubscription = null;
+        this.connectionCreatedSubscription = null;
+        this.connectionDeletedSubscription = null;
         this.eventEmitter = new events_1.EventEmitter();
+        this._y = null;
         this.elements = new Set();
         this.positionChanged$ = rxjs_1.fromEvent(this.eventEmitter, 'positionChanged');
+        try {
+            for (var _c = __values(this.attachTo.store.labelsInThisLine), _d = _c.next(); !_d.done; _d = _c.next()) {
+                var label = _d.value;
+                var newLabelView = new LabelView_1.LabelView.Entity(label.id, label, this);
+                this.attachTo.root.labelViewRepo.add(newLabelView);
+                this.elements.add(newLabelView);
+                try {
+                    for (var _e = __values(label.sameLineConnections), _f = _e.next(); !_f.done; _f = _e.next()) {
+                        var connection = _f.value;
+                        var newConnectionView = new ConnectionView_1.ConnectionView.Entity(connection.id, connection, this);
+                        this.attachTo.root.connectionViewRepo.add(newConnectionView);
+                        this.elements.add(newConnectionView);
+                    }
+                }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                finally {
+                    try {
+                        if (_f && !_f.done && (_b = _e.return)) _b.call(_e);
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                }
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        this.labelCreatedSubscription = this.attachTo.root.store.labelRepo.created$.pipe(operators_1.filter(function (it) { return _this.attachTo.store.isLabelInThisLine(it); })).subscribe(function (it) {
+            var theLabel = _this.attachTo.root.store.labelRepo.get(it);
+            var theLabelView = new LabelView_1.LabelView.Entity(theLabel.id, theLabel, _this);
+            if (!_this.attachTo.root.labelViewRepo.has(theLabelView.id)) {
+                _this.attachTo.root.labelViewRepo.add(theLabelView);
+            }
+            _this.addElement(theLabelView);
+        });
+        this.connectionCreatedSubscription = this.attachTo.root.store.connectionRepo.created$.pipe(operators_1.filter(function (it) { return _this.attachTo.store.isConnectionInThisLine(it); })).subscribe(function (it) {
+            var theConnection = _this.attachTo.root.store.connectionRepo.get(it);
+            var theConnectionView = new ConnectionView_1.ConnectionView.Entity(theConnection.id, theConnection, _this);
+            if (!_this.attachTo.root.connectionViewRepo.has(theConnectionView.id)) {
+                _this.attachTo.root.connectionViewRepo.add(theConnectionView);
+            }
+            _this.addElement(theConnectionView);
+        });
+        this.labelDeletedSubscription = this.attachTo.root.store.labelRepo.deleted$.pipe(operators_1.filter(function (it) { return _this.attachTo.store.isLabelInThisLine(it); })).subscribe(function (it) {
+            var e_3, _a;
+            _this.attachTo.root.labelViewRepo.delete(it.id);
+            var originHeight = _this.height;
+            try {
+                for (var _b = __values(_this.elements), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var ele = _c.value;
+                    if (ele instanceof LabelView_1.LabelView.Entity && ele.id === it.id) {
+                        _this.elements.delete(ele);
+                        break;
+                    }
+                }
+            }
+            catch (e_3_1) { e_3 = { error: e_3_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_3) throw e_3.error; }
+            }
+            if (_this.height !== originHeight) {
+                _this.attachTo.layout();
+                _this.layout(_this.height - originHeight);
+                _this.attachTo.layoutAfterSelf(_this.height - originHeight);
+            }
+        });
+        this.connectionDeletedSubscription = this.attachTo.root.store.connectionRepo.deleted$.pipe(operators_1.filter(function (it) { return _this.attachTo.store.isConnectionInThisLine(it); })).subscribe(function (it) {
+            var e_4, _a;
+            _this.attachTo.root.connectionViewRepo.delete(it.id);
+            var originHeight = _this.height;
+            try {
+                for (var _b = __values(_this.elements), _c = _b.next(); !_c.done; _c = _b.next()) {
+                    var ele = _c.value;
+                    if (ele instanceof ConnectionView_1.ConnectionView.Entity && ele.id === it.id) {
+                        _this.elements.delete(ele);
+                        break;
+                    }
+                }
+            }
+            catch (e_4_1) { e_4 = { error: e_4_1 }; }
+            finally {
+                try {
+                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                }
+                finally { if (e_4) throw e_4.error; }
+            }
+            if (_this.height !== originHeight) {
+                _this.attachTo.layout();
+                _this.layout(_this.height - originHeight);
+                _this.attachTo.layoutAfterSelf(_this.height - originHeight);
+            }
+        });
     }
+    Object.defineProperty(TopContext.prototype, "y", {
+        get: function () {
+            Assert_1.assert(this._y !== null);
+            return this._y;
+        },
+        set: function (value) {
+            if (value !== this._y) {
+                this._y = value;
+                this.svgElement.y(this.y);
+                this.positionChanged();
+            }
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(TopContext.prototype, "height", {
         get: function () {
-            var e_1, _a;
+            var e_5, _a, e_6, _b, e_7, _c;
+            try {
+                for (var _d = __values(this.elements), _e = _d.next(); !_e.done; _e = _d.next()) {
+                    var element = _e.value;
+                    if (element instanceof LabelView_1.LabelView.Entity)
+                        element.eliminateOverlapping();
+                }
+            }
+            catch (e_5_1) { e_5 = { error: e_5_1 }; }
+            finally {
+                try {
+                    if (_e && !_e.done && (_a = _d.return)) _a.call(_d);
+                }
+                finally { if (e_5) throw e_5.error; }
+            }
+            try {
+                for (var _f = __values(this.elements), _g = _f.next(); !_g.done; _g = _f.next()) {
+                    var element = _g.value;
+                    if (element instanceof ConnectionView_1.ConnectionView.Entity)
+                        element.eliminateOverlapping();
+                }
+            }
+            catch (e_6_1) { e_6 = { error: e_6_1 }; }
+            finally {
+                try {
+                    if (_g && !_g.done && (_b = _f.return)) _b.call(_f);
+                }
+                finally { if (e_6) throw e_6.error; }
+            }
             var maxLayer = 0;
             try {
-                for (var _b = __values(this.elements), _c = _b.next(); !_c.done; _c = _b.next()) {
-                    var it_1 = _c.value;
+                for (var _h = __values(this.elements), _j = _h.next(); !_j.done; _j = _h.next()) {
+                    var it_1 = _j.value;
                     if (it_1.layer > maxLayer) {
                         maxLayer = it_1.layer;
                     }
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_7_1) { e_7 = { error: e_7_1 }; }
             finally {
                 try {
-                    if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                    if (_j && !_j.done && (_c = _h.return)) _c.call(_h);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_7) throw e_7.error; }
             }
             return maxLayer * 30;
         },
         enumerable: true,
         configurable: true
     });
-    Object.defineProperty(TopContext.prototype, "globalY", {
-        get: function () {
-            return this.svgElement.rbox(this.svgElement.doc()).y;
-        },
-        enumerable: true,
-        configurable: true
-    });
-    TopContext.prototype.render = function (context) {
-        this.svgElement = context.group().back();
-        this.layout(null);
-        __spread(this.elements).forEach(function (it) { return it.render(); });
-    };
-    TopContext.prototype.removeElement = function () {
-        this.svgElement.remove();
-    };
     TopContext.prototype.layout = function (dy) {
         if (dy === null) {
-            var originY = 0;
-            if (this.attachTo.svgElement.node.previousSibling === null) {
-                originY = this.attachTo.svgElement.node.getExtentOfChar(0).y;
+            if (this.attachTo.isFirst) {
+                this.y = this.attachTo.svgElement.node.getExtentOfChar(0).y;
             }
             else {
-                originY = this.attachTo.svgElement.node.previousSibling.instance.originY + 20.8 + this.height;
+                this.y = this.attachTo.prev.topContext.y + 20.8 + this.height;
             }
-            this.attachTo.svgElement.originY = originY;
-            this.svgElement.y(originY);
         }
         else {
-            this.attachTo.svgElement.originY += dy;
-            this.svgElement.y(this.svgElement.y() + dy);
+            this.y += dy;
         }
+    };
+    TopContext.prototype.render = function () {
+        this.elements.forEach(function (it) { return it.render(); });
+    };
+    TopContext.prototype.preRender = function (context) {
+        this.svgElement = context.group().back();
+        this.elements.forEach(function (it) { return it.preRender(); });
+    };
+    TopContext.prototype.initPosition = function () {
+        this.elements.forEach(function (it) { return it.initPosition(); });
+    };
+    TopContext.prototype.postRender = function () {
+        this.elements.forEach(function (it) { return it.postRender(); });
+    };
+    TopContext.prototype.remove = function () {
+        var e_8, _a;
+        try {
+            for (var _b = __values(this.elements), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var element = _c.value;
+                if (element instanceof LabelView_1.LabelView.Entity) {
+                    this.attachTo.root.labelViewRepo.delete(element);
+                }
+                else if (element instanceof ConnectionView_1.ConnectionView.Entity) {
+                    this.attachTo.root.connectionViewRepo.delete(element);
+                }
+            }
+        }
+        catch (e_8_1) { e_8 = { error: e_8_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_8) throw e_8.error; }
+        }
+        this.svgElement.remove();
+        this.labelCreatedSubscription.unsubscribe();
+        this.labelDeletedSubscription.unsubscribe();
+        this.connectionCreatedSubscription.unsubscribe();
+        this.connectionDeletedSubscription.unsubscribe();
+    };
+    TopContext.prototype.addElement = function (element) {
+        var originHeight = this.height;
+        this.elements.add(element);
+        element.preRender();
+        element.initPosition();
+        element.eliminateOverlapping();
+        element.render();
+        element.postRender();
+        if (originHeight !== this.height) {
+            this.attachTo.layout();
+            this.layout(this.height - originHeight);
+            this.attachTo.layoutAfterSelf(this.height - originHeight);
+        }
+    };
+    TopContext.prototype.positionChanged = function () {
         this.eventEmitter.emit('positionChanged');
     };
     return TopContext;
 }());
 exports.TopContext = TopContext;
 
-},{"events":1,"rxjs":3}],218:[function(require,module,exports){
+},{"../../Infrastructure/Assert":205,"./ConnectionView":214,"./LabelView":215,"events":1,"rxjs":3,"rxjs/operators":200}],218:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -18551,6 +18529,8 @@ var TopContextUser = /** @class */ (function () {
         while (this.overlapping) {
             ++this.layer;
         }
+    };
+    TopContextUser.prototype.postRender = function () {
     };
     return TopContextUser;
 }());
@@ -18669,8 +18649,8 @@ var TwoLabelsClickedHandler = /** @class */ (function () {
                 _this.markerElement.remove();
                 _this.svgElement.remove();
                 var fromLabelView = _this.root.view.labelViewRepo.get(_this.lastSelection);
-                var fromX = fromLabelView.globalX;
-                var fromY = fromLabelView.globalY;
+                var fromX = fromLabelView.globalX - _this.root.view.svgDoc.node.getBoundingClientRect().left - 20;
+                var fromY = fromLabelView.globalY - _this.root.view.svgDoc.node.getBoundingClientRect().top;
                 var toX = e.clientX - _this.root.view.svgDoc.node.getBoundingClientRect().left - 20;
                 var toY = e.clientY - _this.root.view.svgDoc.node.getBoundingClientRect().top;
                 var dx = (fromX - toX) / 4;
@@ -18742,20 +18722,9 @@ var View = /** @class */ (function () {
         this.store.ready$.subscribe(function () {
             _this.construct();
             _this.render();
-            _this.root.store.connectionRepo.created$
-                .subscribe(function (it) {
-                _this.connectionViewRepo.add(new ConnectionView_1.ConnectionView.Entity(it, _this.store.connectionRepo.get(it), _this));
-            });
-            _this.resize();
-        });
-        this.store.labelRepo.deleted$.subscribe(function (it) {
-            _this.labelViewRepo.delete(it.id);
         });
         this.store.lineRepo.deleted$.subscribe(function (it) {
             _this.lineViewRepo.delete(it.id);
-        });
-        this.store.connectionRepo.deleted$.subscribe(function (it) {
-            _this.connectionViewRepo.delete(it.id);
         });
     }
     Object.defineProperty(View.prototype, "store", {
@@ -18767,94 +18736,10 @@ var View = /** @class */ (function () {
     });
     View.prototype.construct = function () {
         var _this = this;
-        var e_1, _a;
         LineView_1.LineView.constructAll(this).map(function (it) { return _this.lineViewRepo.add(it); });
-        ConnectionView_1.ConnectionView.constructAll(this).map(function (it) { return _this.connectionViewRepo.add(it); });
-        var _loop_1 = function (_, entity) {
-            var labels = this_1.store.labelRepo.getEntitiesInRange(entity.store.startIndex, entity.store.endIndex);
-            labels.map(function (label) {
-                var newLabelView = new LabelView_1.LabelView.Entity(label.id, label, entity.topContext);
-                _this.labelViewRepo.add(newLabelView);
-                entity.topContext.elements.add(newLabelView);
-            });
-        };
-        var this_1 = this;
-        try {
-            for (var _b = __values(this.lineViewRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), _ = _d[0], entity = _d[1];
-                _loop_1(_, entity);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
-        }
-    };
-    View.prototype.preRender = function () {
-        var e_2, _a, e_3, _b, e_4, _c, e_5, _d;
-        var svgText = this.svgDoc.text('');
-        svgText.clear();
-        svgText.build(true);
-        try {
-            for (var _e = __values(this.lineViewRepo), _f = _e.next(); !_f.done; _f = _e.next()) {
-                var _g = __read(_f.value, 2), _ = _g[0], entity = _g[1];
-                entity.preRender(svgText);
-            }
-        }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
-        finally {
-            try {
-                if (_f && !_f.done && (_a = _e.return)) _a.call(_e);
-            }
-            finally { if (e_2) throw e_2.error; }
-        }
-        try {
-            for (var _h = __values(this.lineViewRepo), _j = _h.next(); !_j.done; _j = _h.next()) {
-                var _k = __read(_j.value, 2), _ = _k[0], entity = _k[1];
-                entity.setXCoordinateOfChars();
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (_j && !_j.done && (_b = _h.return)) _b.call(_h);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        try {
-            for (var _l = __values(this.lineViewRepo), _m = _l.next(); !_m.done; _m = _l.next()) {
-                var _o = __read(_m.value, 2), _ = _o[0], entity = _o[1];
-                entity.removePreRenderElement();
-            }
-        }
-        catch (e_4_1) { e_4 = { error: e_4_1 }; }
-        finally {
-            try {
-                if (_m && !_m.done && (_c = _l.return)) _c.call(_l);
-            }
-            finally { if (e_4) throw e_4.error; }
-        }
-        try {
-            for (var _p = __values(this.labelViewRepo), _q = _p.next(); !_q.done; _q = _p.next()) {
-                var _r = __read(_q.value, 2), _ = _r[0], entity = _r[1];
-                entity.preRender(this.svgDoc);
-            }
-        }
-        catch (e_5_1) { e_5 = { error: e_5_1 }; }
-        finally {
-            try {
-                if (_q && !_q.done && (_d = _p.return)) _d.call(_p);
-            }
-            finally { if (e_5) throw e_5.error; }
-        }
-        svgText.remove();
     };
     View.prototype.render = function () {
-        var e_6, _a;
-        this.preRender();
+        var e_1, _a, e_2, _b, e_3, _c, e_4, _d, e_5, _e, e_6, _f, e_7, _g, e_8, _h;
         var head = document.getElementsByTagName('head')[0];
         var style = document.createElement('style');
         style.type = 'text/css';
@@ -18865,17 +18750,109 @@ var View = /** @class */ (function () {
         svgText.clear();
         svgText.build(true);
         try {
-            for (var _b = __values(this.lineViewRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var _d = __read(_c.value, 2), _ = _d[0], entity = _d[1];
+            // who believe it takes such effort to separate read & write
+            for (var _j = __values(this.lineViewRepo), _k = _j.next(); !_k.done; _k = _j.next()) {
+                var _l = __read(_k.value, 2), _ = _l[0], entity = _l[1];
                 entity.render(svgText);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (_k && !_k.done && (_a = _j.return)) _a.call(_j);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        try {
+            for (var _m = __values(this.lineViewRepo), _o = _m.next(); !_o.done; _o = _m.next()) {
+                var _p = __read(_o.value, 2), _ = _p[0], entity = _p[1];
+                entity.calculateInitialCharPositions();
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (_o && !_o.done && (_b = _m.return)) _b.call(_m);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        try {
+            for (var _q = __values(this.lineViewRepo), _r = _q.next(); !_r.done; _r = _q.next()) {
+                var _s = __read(_r.value, 2), _ = _s[0], entity = _s[1];
+                entity.topContext.preRender(this.svgDoc);
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (_r && !_r.done && (_c = _q.return)) _c.call(_q);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        try {
+            for (var _t = __values(this.lineViewRepo), _u = _t.next(); !_u.done; _u = _t.next()) {
+                var _v = __read(_u.value, 2), _ = _v[0], entity = _v[1];
+                entity.topContext.initPosition();
+            }
+        }
+        catch (e_4_1) { e_4 = { error: e_4_1 }; }
+        finally {
+            try {
+                if (_u && !_u.done && (_d = _t.return)) _d.call(_t);
+            }
+            finally { if (e_4) throw e_4.error; }
+        }
+        try {
+            for (var _w = __values(this.lineViewRepo), _x = _w.next(); !_x.done; _x = _w.next()) {
+                var _y = __read(_x.value, 2), _ = _y[0], entity = _y[1];
+                entity.layout();
+            }
+        }
+        catch (e_5_1) { e_5 = { error: e_5_1 }; }
+        finally {
+            try {
+                if (_x && !_x.done && (_e = _w.return)) _e.call(_w);
+            }
+            finally { if (e_5) throw e_5.error; }
+        }
+        try {
+            for (var _z = __values(this.lineViewRepo), _0 = _z.next(); !_0.done; _0 = _z.next()) {
+                var _1 = __read(_0.value, 2), _ = _1[0], entity = _1[1];
+                entity.renderTopContext();
             }
         }
         catch (e_6_1) { e_6 = { error: e_6_1 }; }
         finally {
             try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+                if (_0 && !_0.done && (_f = _z.return)) _f.call(_z);
             }
             finally { if (e_6) throw e_6.error; }
+        }
+        try {
+            for (var _2 = __values(this.lineViewRepo), _3 = _2.next(); !_3.done; _3 = _2.next()) {
+                var _4 = __read(_3.value, 2), _ = _4[0], entity = _4[1];
+                entity.topContext.layout(null);
+            }
+        }
+        catch (e_7_1) { e_7 = { error: e_7_1 }; }
+        finally {
+            try {
+                if (_3 && !_3.done && (_g = _2.return)) _g.call(_2);
+            }
+            finally { if (e_7) throw e_7.error; }
+        }
+        try {
+            for (var _5 = __values(this.lineViewRepo), _6 = _5.next(); !_6.done; _6 = _5.next()) {
+                var _7 = __read(_6.value, 2), _ = _7[0], entity = _7[1];
+                entity.topContext.postRender();
+            }
+        }
+        catch (e_8_1) { e_8 = { error: e_8_1 }; }
+        finally {
+            try {
+                if (_6 && !_6.done && (_h = _5.return)) _h.call(_5);
+            }
+            finally { if (e_8) throw e_8.error; }
         }
     };
     View.prototype.resize = function () {

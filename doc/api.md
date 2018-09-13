@@ -94,6 +94,12 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 #### createLabel (labelId, startIndex, endIndex)
 创建标注(label)
 
+| 参数 | 意义              |
+| ---- | ----------------- |
+| labelId   | 被点击的连接的id  |
+| startIndex    | 被点击时鼠标的X值 |
+| endIndex    | 被点击时鼠标的Y值 |
+
 #### deleteLabel (labelId)
 删除标注(label)
 
