@@ -19093,4 +19093,4 @@ interface JQuery{
 
 },{"./SvgAnnotator/SvgAnnotator":222}]},{},[224]);
 
-//# sourceMappingURL=jquery.annotator.js.map
+//# sourceMappingURL=Case-SvgAnnotator.js.map

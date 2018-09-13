@@ -20,7 +20,7 @@
 
 ```
  <script src="jquery-1.11.1.js"></script>
- <script src="jquery.annotator.js"></script>
+ <script src="Case-SvgAnnotator.js"></script>
  <script>
     var svgAnnotator = $.SvgAnnotator(document.getElementById("div"), "这是一段文本或者一个对象", {});
  </script>

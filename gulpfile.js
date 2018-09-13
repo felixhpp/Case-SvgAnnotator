@@ -24,7 +24,7 @@ gulp.task("bundle-jquery-annotator",  function(){
     })
     .plugin(tsify)
     .bundle()
-    .pipe(source('jquery.annotator.js'))
+    .pipe(source('Case-SvgAnnotator.js'))
     .pipe(buffer())
     .pipe(sourcemaps.init({loadMaps: true}))
     //.pipe(uglify())

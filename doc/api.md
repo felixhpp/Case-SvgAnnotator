@@ -18,11 +18,11 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 ### 创建
 
-为了使用Case-SvgAnnotator插件，我们需要在html中引用jquery.js和jquery.annotator.js：
+为了使用Case-SvgAnnotator插件，我们需要在html中引用jquery.js和Case-SvgAnnotator.js：
 
 ```HTML
  <script src="jquery-1.11.1.js"></script>
- <script src="jquery.annotator.js"></script>
+ <script src="Case-SvgAnnotator.js"></script>
  <script>
     var svgAnnotator = $.SvgAnnotator(document.getElementById("div"), data, options);
  </script>
