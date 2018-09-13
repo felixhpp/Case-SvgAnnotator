@@ -130,7 +130,11 @@ export class SvgAnnotator {
         document.body.removeChild(eleLink);
     };
 
-    public getLabelRepoById(id:number){
+    /**
+     * 获取label所在行文本信息
+     * @param id label的id
+     */
+    public getLabelLineById(id:number){
         let curLabelViewRepo = _annotator.view.labelViewRepo;
         let labelViewRepoEntity = null;
         if(curLabelViewRepo != null){
@@ -140,11 +144,15 @@ export class SvgAnnotator {
                     let startIndexInLine = item.store.startIndex - curStore.startIndex;
                     let endIndexInLine = item.store.endIndex - curStore.startIndex;
                     labelViewRepoEntity = {
+                        labelId:id,
                         curLineText: curStore.text,
                         startIndexInLine: startIndexInLine,
-                        endIndexInLine: endIndexInLine
+                        endIndexInLine: endIndexInLine,
+                        startIndex: curStore.startIndex,
+                        endIndex: curStore.endIndex
                     }
 
+                    return false;
                  }
              });
         }
@@ -152,7 +160,47 @@ export class SvgAnnotator {
         return labelViewRepoEntity;
     };
 
-    public getConnectionRepoById(id:number){
-        
+    /**
+     * 获取连接线所在行文本信息，存在同一行和不在同一行的情况
+     * @param id 连接线ID
+     */
+    public getConnectionLineById(id:number){
+        let connectionLineRepoEntity = null;
+        let curConnectionViewRepo = _annotator.view.connectionViewRepo;
+
+        if(curConnectionViewRepo != null){
+            curConnectionViewRepo.entities.forEach(item =>{
+                if(item.id === id){
+                    connectionLineRepoEntity = {
+                        id: id,
+                        inline: item.inline,
+                        fromId: item.from.id,
+                        toId: item.to.id
+                    };
+                    return false;
+                 }
+            });
+        }
+
+        if(connectionLineRepoEntity != null){
+            let formLableLine = this.getLabelLineById(connectionLineRepoEntity.fromId);
+            let toLabelLine = this.getLabelLineById(connectionLineRepoEntity.toId);
+
+            if(formLableLine != null && toLabelLine != null){
+                let startIndex:number = formLableLine.startIndex;
+                let endIndex:number = toLabelLine.endIndex;
+                let lineText = this.options.originString.slice(startIndex, endIndex)
+                connectionLineRepoEntity = {
+                    connection:id,
+                    fromId: connectionLineRepoEntity.fromId,
+                    toId: connectionLineRepoEntity.toId,
+                    curLineText: lineText,
+                    startIndex: startIndex,
+                    endIndex: endIndex
+                };
+            }
+        }
+
+        return connectionLineRepoEntity;
     };
 }
