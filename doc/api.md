@@ -163,4 +163,4 @@ var options = {
 | categoryId   | 要修改的ConnectionCategories的id  |
 
 #### download()
-下载对应的[JSON格式](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/images/json-style.png)数据文件
+下载对应的[JSON格式](https://felixhpp.github.io/Case-SvgAnnotator/doc/images/json-style.png)数据文件
