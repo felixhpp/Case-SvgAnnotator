@@ -17763,14 +17763,18 @@ var LabelView;
         });
         Object.defineProperty(Entity.prototype, "globalX", {
             get: function () {
-                return this.annotationElement.children()[0].node.getBoundingClientRect().x + this.annotationElementBox.container.width / 2;
+                //return (this.annotationElement.children()[0].node.getBoundingClientRect() as DOMRect).x + this.annotationElementBox.container.width / 2;
+                // 获取left属性，避免部分浏览器中没有x属性
+                return this.annotationElement.children()[0].node.getBoundingClientRect().left + this.annotationElementBox.container.width / 2;
             },
             enumerable: true,
             configurable: true
         });
         Object.defineProperty(Entity.prototype, "globalY", {
             get: function () {
-                return this.annotationElement.children()[0].node.getBoundingClientRect().y + this.textElement.node.clientHeight / 2;
+                //return (this.annotationElement.children()[0].node.getBoundingClientRect() as DOMRect).y + this.textElement.node.clientHeight / 2;
+                // 获取top属性，避免部分浏览器中没有y属性
+                return this.annotationElement.children()[0].node.getBoundingClientRect().top + this.textElement.node.clientHeight / 2;
             },
             enumerable: true,
             configurable: true

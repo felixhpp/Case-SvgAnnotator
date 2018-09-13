@@ -36,6 +36,7 @@ export class TwoLabelsClickedHandler {
                 M${fromX} ${fromY}
                 C${fromX - dx},${y2},${toX + dx},${y2},${toX},${toY}
                 `).stroke({color: 'black', width: 1}).fill('none').back();
+
                 this.markerElement = this.svgElement.marker('end', 5, 5, add => {
                     add.polyline('0,0 5,2.5 0,5 0.2,2.5');
                 });
