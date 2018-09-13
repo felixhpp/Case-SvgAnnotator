@@ -32,7 +32,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 在data为JSON时，格式如下：
 
-![JSON格式](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/images/json-style.png)
+![JSON格式](https://felixhpp.github.io/Case-SvgAnnotator/doc/images/json-style.png)
 
 在data为纯文本时，相当于`content`为文本内容，其他为`[]`的JSON。
 
