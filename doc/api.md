@@ -42,7 +42,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 `options`是一个`object`对象，选项通常作为参数传递给init或attach动作。其中可配置的值如下：
 
-  #### maxLineWidth
+#### maxLineWidth
 最大行宽，在一行中的字符数超过此数值后会进行折行。
 默认值为：80
 
