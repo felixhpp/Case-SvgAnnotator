@@ -1,6 +1,7 @@
 import {SvgAnnotatorOptions,SvgAnnotatorDefaultOptions} from '../SvgAnnotator/SvgAnnotatorOptions';
 import {Annotator} from '../Annotator/Annotator'
 import {Action} from '../Annotator/Action/Action'
+import {cusAssert} from "../SvgAnnotator/CusAssert";
 
 let _annotator:Annotator = null;
 //typescript:类 class
@@ -17,40 +18,46 @@ export class SvgAnnotator {
             maxLineWidth:this.options.maxLineWidth
         };
         _annotator = new Annotator(data, htmlElement, config);
+        this.jsonData = _annotator.store.json;
         this.annotator1 = _annotator;
         this.options.originString = _annotator.store.content;
         _annotator.on('textSelected', (startIndex: number, endIndex: number) => {
-            if(typeof this.options.textSelected === "function"){
-                this.options.startIndex = startIndex;
-                this.options.endIndex = endIndex;
-                this.options.selectedText = this.options.originString.slice(startIndex, endIndex)
-                this.options.textSelected(startIndex, endIndex);
-            }
+            cusAssert(typeof this.options.textSelected === "function", 
+                'options "textSelected" must is function type');
+
+            this.options.startIndex = startIndex;
+            this.options.endIndex = endIndex;
+            this.options.selectedText = this.options.originString.slice(startIndex, endIndex)
+            this.options.textSelected(startIndex, endIndex);
         });
         _annotator.on('labelClicked', (id: number) => {
-            if(typeof this.options.labelClicked === "function"){
-                this.options.labelClicked(id);
-            }
+            cusAssert(typeof this.options.labelClicked === "function", 
+                'options "labelClicked" must is function type');
+
+            this.options.labelClicked(id);
         });
       
         _annotator.on('labelRightClicked', (id: number,x: number,y: number) => {
-            if(typeof this.options.labelRightClicked === "function"){
-                this.options.labelRightClicked(id,x,y);
-            }
+            cusAssert(typeof this.options.labelRightClicked === "function", 
+                'options "labelRightClicked" must is function type');
+            
+            this.options.labelRightClicked(id,x,y);
         });
       
         _annotator.on('twoLabelsClicked', (first: number, second: number) => {
-            if(typeof this.options.twoLabelsClicked === "function"){
-              this.options.first = first;
-              this.options.second =second;
-              this.options.twoLabelsClicked(first,second);
-            }
+            cusAssert(typeof this.options.twoLabelsClicked === "function", 
+                'options "twoLabelsClicked" must is function type');
+
+            this.options.first = first;
+            this.options.second =second;
+            this.options.twoLabelsClicked(first,second);
         });
       
         _annotator.on('connectionRightClicked', (id: number,x: number,y: number) => {
-            if(typeof this.options.connectionRightClicked === "function"){
-                this.options.connectionRightClicked(id,x,y);
-            }
+            cusAssert(typeof this.options.connectionRightClicked === "function", 
+                'options "connectionRightClicked" must is function type');
+
+            this.options.connectionRightClicked(id,x,y);
         });
     }
 
@@ -66,7 +73,23 @@ export class SvgAnnotator {
      * @param endIndex 
      */
     public createLabel (categoryId: number, startIndex: number, endIndex: number) {
-        this._applyAction(Action.Label.Create(categoryId, startIndex, endIndex));
+        let isOvetlap:boolean=false;
+        if(!this.options.allowOverlapLabel){
+            let labels = ('labels' in this.jsonData) ?  this.jsonData['labels'] : [];
+            labels.forEach(item =>{
+                if(item.categoryId === categoryId 
+                && item.startIndex === startIndex 
+                && item.endIndex === endIndex){
+                    //cusAssert(false, "label not allow overlap.");
+                    isOvetlap = true;
+                    return false;
+                }
+            });
+        }
+
+        if(!isOvetlap){
+            this._applyAction(Action.Label.Create(categoryId, startIndex, endIndex));
+        }
     };
 
     /**
@@ -92,7 +115,22 @@ export class SvgAnnotator {
      * @param endIndex 
      */
     public createConnection (categoryId: number, fromId: number, toId: number) {
-        this._applyAction(Action.Connection.Create(categoryId, fromId, toId));
+        let isOvetlap:boolean=false;
+        if(!this.options.allowOverlapConnection){
+            let labels = ('connections' in this.jsonData) ?  this.jsonData['connections'] : [];
+            labels.forEach(item =>{
+                if(item.categoryId === categoryId 
+                && item.fromId === fromId 
+                && item.toId === toId){
+                    isOvetlap = true;
+                    return false;
+                }
+            });
+        }
+
+        if(!isOvetlap){
+            this._applyAction(Action.Connection.Create(categoryId, fromId, toId));
+        }
     };
     /**
      * 删除连接(Connection)

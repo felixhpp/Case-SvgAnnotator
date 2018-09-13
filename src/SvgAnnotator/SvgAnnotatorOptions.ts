@@ -1,7 +1,9 @@
 
 export interface SvgAnnotatorOptions{
     maxLineWidth?: number;
-    textSelected?: Function;
+    allowOverlapLabel?: boolean;
+    allowOverlapConnection?: boolean;
+    textSelected?;
     labelClicked?;
     labelRightClicked?;
     twoLabelsClicked?;
@@ -19,6 +21,9 @@ export class SvgAnnotatorDefaultOptions implements SvgAnnotatorOptions {
     first:number = -1;
     second:number = -1;
     maxLineWidth: number= 80;
+    allowOverlapLabel: boolean = true;
+    allowOverlapConnection: boolean = true;
+
     /**
      * 选取了一段文本后，会触发textSelected事件
      * @param startIndex 选取部分的开始坐标

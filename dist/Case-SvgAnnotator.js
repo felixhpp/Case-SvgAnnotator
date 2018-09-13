@@ -18865,9 +18865,20 @@ exports.View = View;
 },{"./Entities/ConnectionView":214,"./Entities/LabelView":215,"./Entities/LineView":216,"svg.js":201}],222:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+function cusAssert(condition, message) {
+    if (condition === false) {
+        throw Error('Assertion failed' + message ? ':' + message : '');
+    }
+}
+exports.cusAssert = cusAssert;
+
+},{}],223:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 var SvgAnnotatorOptions_1 = require("../SvgAnnotator/SvgAnnotatorOptions");
 var Annotator_1 = require("../Annotator/Annotator");
 var Action_1 = require("../Annotator/Action/Action");
+var CusAssert_1 = require("../SvgAnnotator/CusAssert");
 var _annotator = null;
 //typescript:类 class
 var SvgAnnotator = /** @class */ (function () {
@@ -18880,37 +18891,33 @@ var SvgAnnotator = /** @class */ (function () {
             maxLineWidth: this.options.maxLineWidth
         };
         _annotator = new Annotator_1.Annotator(data, htmlElement, config);
+        this.jsonData = _annotator.store.json;
         this.annotator1 = _annotator;
         this.options.originString = _annotator.store.content;
         _annotator.on('textSelected', function (startIndex, endIndex) {
-            if (typeof _this.options.textSelected === "function") {
-                _this.options.startIndex = startIndex;
-                _this.options.endIndex = endIndex;
-                _this.options.selectedText = _this.options.originString.slice(startIndex, endIndex);
-                _this.options.textSelected(startIndex, endIndex);
-            }
+            CusAssert_1.cusAssert(typeof _this.options.textSelected === "function", 'options "textSelected" must is function type');
+            _this.options.startIndex = startIndex;
+            _this.options.endIndex = endIndex;
+            _this.options.selectedText = _this.options.originString.slice(startIndex, endIndex);
+            _this.options.textSelected(startIndex, endIndex);
         });
         _annotator.on('labelClicked', function (id) {
-            if (typeof _this.options.labelClicked === "function") {
-                _this.options.labelClicked(id);
-            }
+            CusAssert_1.cusAssert(typeof _this.options.labelClicked === "function", 'options "labelClicked" must is function type');
+            _this.options.labelClicked(id);
         });
         _annotator.on('labelRightClicked', function (id, x, y) {
-            if (typeof _this.options.labelRightClicked === "function") {
-                _this.options.labelRightClicked(id, x, y);
-            }
+            CusAssert_1.cusAssert(typeof _this.options.labelRightClicked === "function", 'options "labelRightClicked" must is function type');
+            _this.options.labelRightClicked(id, x, y);
         });
         _annotator.on('twoLabelsClicked', function (first, second) {
-            if (typeof _this.options.twoLabelsClicked === "function") {
-                _this.options.first = first;
-                _this.options.second = second;
-                _this.options.twoLabelsClicked(first, second);
-            }
+            CusAssert_1.cusAssert(typeof _this.options.twoLabelsClicked === "function", 'options "twoLabelsClicked" must is function type');
+            _this.options.first = first;
+            _this.options.second = second;
+            _this.options.twoLabelsClicked(first, second);
         });
         _annotator.on('connectionRightClicked', function (id, x, y) {
-            if (typeof _this.options.connectionRightClicked === "function") {
-                _this.options.connectionRightClicked(id, x, y);
-            }
+            CusAssert_1.cusAssert(typeof _this.options.connectionRightClicked === "function", 'options "connectionRightClicked" must is function type');
+            _this.options.connectionRightClicked(id, x, y);
         });
     }
     SvgAnnotator.prototype._applyAction = function (action) {
@@ -18925,7 +18932,22 @@ var SvgAnnotator = /** @class */ (function () {
      * @param endIndex
      */
     SvgAnnotator.prototype.createLabel = function (categoryId, startIndex, endIndex) {
-        this._applyAction(Action_1.Action.Label.Create(categoryId, startIndex, endIndex));
+        var isOvetlap = false;
+        if (!this.options.allowOverlapLabel) {
+            var labels = ('labels' in this.jsonData) ? this.jsonData['labels'] : [];
+            labels.forEach(function (item) {
+                if (item.categoryId === categoryId
+                    && item.startIndex === startIndex
+                    && item.endIndex === endIndex) {
+                    //cusAssert(false, "label not allow overlap.");
+                    isOvetlap = true;
+                    return false;
+                }
+            });
+        }
+        if (!isOvetlap) {
+            this._applyAction(Action_1.Action.Label.Create(categoryId, startIndex, endIndex));
+        }
     };
     ;
     /**
@@ -18952,7 +18974,21 @@ var SvgAnnotator = /** @class */ (function () {
      * @param endIndex
      */
     SvgAnnotator.prototype.createConnection = function (categoryId, fromId, toId) {
-        this._applyAction(Action_1.Action.Connection.Create(categoryId, fromId, toId));
+        var isOvetlap = false;
+        if (!this.options.allowOverlapConnection) {
+            var labels = ('connections' in this.jsonData) ? this.jsonData['connections'] : [];
+            labels.forEach(function (item) {
+                if (item.categoryId === categoryId
+                    && item.fromId === fromId
+                    && item.toId === toId) {
+                    isOvetlap = true;
+                    return false;
+                }
+            });
+        }
+        if (!isOvetlap) {
+            this._applyAction(Action_1.Action.Connection.Create(categoryId, fromId, toId));
+        }
     };
     ;
     /**
@@ -19063,7 +19099,7 @@ var SvgAnnotator = /** @class */ (function () {
 }());
 exports.SvgAnnotator = SvgAnnotator;
 
-},{"../Annotator/Action/Action":202,"../Annotator/Annotator":203,"../SvgAnnotator/SvgAnnotatorOptions":223}],223:[function(require,module,exports){
+},{"../Annotator/Action/Action":202,"../Annotator/Annotator":203,"../SvgAnnotator/CusAssert":222,"../SvgAnnotator/SvgAnnotatorOptions":224}],224:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SvgAnnotatorDefaultOptions = /** @class */ (function () {
@@ -19077,6 +19113,8 @@ var SvgAnnotatorDefaultOptions = /** @class */ (function () {
         this.first = -1;
         this.second = -1;
         this.maxLineWidth = 80;
+        this.allowOverlapLabel = true;
+        this.allowOverlapConnection = true;
     }
     /**
      * 选取了一段文本后，会触发textSelected事件
@@ -19118,7 +19156,7 @@ var SvgAnnotatorDefaultOptions = /** @class */ (function () {
 }());
 exports.SvgAnnotatorDefaultOptions = SvgAnnotatorDefaultOptions;
 
-},{}],224:[function(require,module,exports){
+},{}],225:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SvgAnnotator_1 = require("./SvgAnnotator/SvgAnnotator");
@@ -19136,6 +19174,6 @@ interface JQuery{
 }
 */ 
 
-},{"./SvgAnnotator/SvgAnnotator":222}]},{},[224]);
+},{"./SvgAnnotator/SvgAnnotator":223}]},{},[225]);
 
 //# sourceMappingURL=Case-SvgAnnotator.js.map

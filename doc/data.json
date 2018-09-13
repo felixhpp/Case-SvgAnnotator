@@ -1,0 +1,31 @@
+
+{
+    "content": "这是一段文本内容。",
+    "labelCategories": [{
+        "id": 0,
+        "text": "测试",
+        "color": "#eac0a2",
+        "borderColor": "#8c7361"
+    }],
+    "labels": [{
+        "id": 0,
+        "categoryId": 0,
+        "startIndex": 0,
+        "endIndex": 2
+    }, {
+        "id": 1,
+        "categoryId": 0,
+        "startIndex": 3,
+        "endIndex": 4
+    }],
+    "connectionCategories": [{
+        "id": 0,
+        "text": "测试1"
+    }],
+    "connections": [{
+        "id": 0,
+        "categoryId": 0,
+        "fromId": 0,
+        "toId": 1
+    }]
+}
