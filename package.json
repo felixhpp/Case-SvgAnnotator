@@ -5,10 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "typings": "dist/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/felixhpp/Case-SvgAnnotator.git"
-  },
+  "repository": "git+https://github.com/felixhpp/Case-SvgAnnotator.git",
   "author": "felix <felixhpp@163.com>",
   "license": "GPL-3.0",
   "private": false,
