@@ -38,6 +38,10 @@ gult
 
 ```
 
+### Demo
+
+[demo](http://htmlpreview.github.io/?https://github.com/felixhpp/Case-SvgAnnotator/blob/master/demo/Index.html)
+
 ### API
 请查看[API](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/api.md)
 
