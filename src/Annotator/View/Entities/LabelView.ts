@@ -107,10 +107,9 @@ export namespace LabelView {
         }
 
         initPosition() {
-            this.textWidth = this.textElement.node.clientWidth;
+            //this.textWidth = this.textElement.node.clientWidth;
             // 使用document.getElementById().getBoundingClientRect().width 避免在谷歌浏览器下width获取不包含padding
-            //this.textWidth = document.getElementById(this.textElement.id()).getBoundingClientRect().width;
-
+            this.textWidth = document.getElementById(this.textElement.id()).getBoundingClientRect().width;
         }
 
         preRender() {
