@@ -32,7 +32,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 在data为JSON时，格式如下：
 
-![JSON格式](http://www.pic68.com/uploads/2018/08/1(7).png)
+![JSON格式](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/images/json-style.png)
 
 在data为纯文本时，相当于`content`为文本内容，其他为`[]`的JSON。
 
@@ -43,24 +43,25 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 `options`是一个`object`对象，选项通常作为参数传递给init或attach动作。
 
 ```
- {
-    maxLineWidth: 80,
-    textSelected: function (startIndex, endIndex) {
+var options = {
+            maxLineWidth: 80,
+            textSelected: function (startIndex, endIndex) {
 
-    },
-    labelClicked: function (id) {
+            },
+            labelClicked: function (id) {
 
-    },
-    twoLabelsClicked: function (first, second) {
+            },
+            twoLabelsClicked: function (first, second) {
 
-    },
-    labelRightClicked: function (id, x, y) {
+            },
+            labelRightClicked: function (id, x, y) {
+		
+            },
+            connectionRightClicked: function (id, x, y) {
+	
+            }
+        }
 
-    },
-    connectionRightClicked: function (id, x, y) {
-
-    }
-}
 
 ```
 
@@ -162,4 +163,4 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 | categoryId   | 要修改的ConnectionCategories的id  |
 
 #### download()
-下载对应的[JSON格式](http://www.pic68.com/uploads/2018/08/1(7).png)数据文件
+下载对应的[JSON格式](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/images/json-style.png)数据文件
