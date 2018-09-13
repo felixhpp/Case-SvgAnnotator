@@ -8,7 +8,7 @@
 
 ## 声明
 
-本项目是作者学习之用，是对开源项目[poplar](https://github.com/synyi/poplar)的一个jQuery插件版本，方便在普通的js中调用，并优化了插件在谷歌浏览器的兼容性问题。如果您的开发环境为node，建议去看[poplar](https://github.com/synyi/poplar)。
+本项目是作者学习之用，是对开源项目[poplar](https://github.com/synyi/poplar)实现的一个jQuery插件版本，方便在普通的js中调用，并优化了插件在谷歌浏览器的兼容性问题。如果您的开发环境为node，建议去看[poplar](https://github.com/synyi/poplar)。
 
 在此特别感谢@[synyi](https://github.com/synyi)的开源项目[poplar](https://github.com/synyi/poplar)。
 
