@@ -32,7 +32,7 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 在data为JSON时，格式如下：
 
-![JSON格式](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/images/json-style.png)
+![JSON格式](https://felixhpp.github.io/Case-SvgAnnotator/doc/images/json-style.png)
 
 在data为纯文本时，相当于`content`为文本内容，其他为`[]`的JSON。
 注意`content`中的全角空格`\u3000`和多个连续空格都会被替换为单个空格。
@@ -165,4 +165,4 @@ var options = {
 | categoryId   | 要修改的ConnectionCategories的id  |
 
 #### download()
-下载对应的[JSON格式](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/doc/images/json-style.png)数据文件
+下载对应的[JSON格式](https://felixhpp.github.io/Case-SvgAnnotator/doc/images/json-style.png?target="_blank")数据文件
