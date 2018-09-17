@@ -225,3 +225,4 @@ typings/
 .idea
 !/webpack.dev.js
 !/webpack.prod.js
+/.vscode
