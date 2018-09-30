@@ -50,6 +50,14 @@ export class SvgAnnotator {
             
             this.options.labelRightClicked(id,x,y);
         });
+
+        _annotator.on('labelDblClicked', (id: number) => {
+            cusAssert(typeof this.options.labelDblClicked === "function", 
+                'options "labelDblClicked" must is function type');
+            
+            this.options.labelDblClicked(id);
+        });
+      
       
         _annotator.on('twoLabelsClicked', (first: number, second: number) => {
             cusAssert(typeof this.options.twoLabelsClicked === "function", 
@@ -65,6 +73,13 @@ export class SvgAnnotator {
                 'options "connectionRightClicked" must is function type');
 
             this.options.connectionRightClicked(id,x,y);
+        });
+
+        _annotator.on('connectionDblClicked', (id: number,x: number,y: number) => {
+            cusAssert(typeof this.options.connectionDblClicked === "function", 
+                'options "connectionDblClicked" must is function type');
+
+            this.options.connectionDblClicked(id,x,y);
         });
         //#endregion 
     }

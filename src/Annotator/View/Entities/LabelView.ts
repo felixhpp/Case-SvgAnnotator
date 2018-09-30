@@ -181,6 +181,10 @@ export namespace LabelView {
                 this.context.attachTo.root.root.emit('labelClicked', this.id);
                 e.preventDefault();
             });
+            this.annotationElement.on('dblclick', (e) => {
+                this.context.attachTo.root.root.emit('labelDblClicked', this.id);
+                e.preventDefault();
+            });
             this.annotationElement.on('contextmenu', (e) => {
                 this.context.attachTo.root.root.emit('labelRightClicked', this.id, e.clientX, e.clientY);
                 e.preventDefault();

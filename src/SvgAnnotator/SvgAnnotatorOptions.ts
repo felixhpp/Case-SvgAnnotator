@@ -5,9 +5,11 @@ export interface SvgAnnotatorOptions{
     allowMultipleLabel?: boolean;
     textSelected?;
     labelClicked?;
+    labelDblClicked?;
     labelRightClicked?;
     twoLabelsClicked?;
     connectionRightClicked?;
+    connectionDblClicked?;
 }
 
 
@@ -35,6 +37,12 @@ export class SvgAnnotatorDefaultOptions implements SvgAnnotatorOptions {
      * @param id 被点击的标注的id
      */
     labelClicked (id: number) {};
+
+    /**
+     * 用户左键双击了一个Label后会触发这个事
+     * @param id 
+     */
+    labelDblClicked (id: number){};
       /**
      * 在用户右键点击了一个Label后会触发这个事件。
      * @param id 被点击的标注的id
@@ -57,6 +65,14 @@ export class SvgAnnotatorDefaultOptions implements SvgAnnotatorOptions {
      * @param y 被点击时鼠标的Y值
      */
     connectionRightClicked (id: number,x: number,y: number) {};
+
+    /**
+     * 在用户双击击了一个连接的文字部分后会触发这个事件。
+     * @param id 
+     * @param x 
+     * @param y 
+     */
+    connectionDblClicked (id: number, x: number, y: number) {};
 }
 
 

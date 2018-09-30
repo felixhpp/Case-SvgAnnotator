@@ -7,13 +7,20 @@ export class TwoLabelsClickedHandler {
 
     constructor(public root: Annotator) {
         this.root.on('labelClicked', (id: number) => {
+          
             if (this.lastSelection === null) {
                 this.lastSelection = id;
                 this.svgElement = this.root.view.svgDoc.path(`M0 0L0 0`).stroke('black');
                 this.markerElement = this.svgElement.marker('end', 5, 5, add => {
                     add.polyline('0,0 5,2.5 0,5 0.2,2.5');
                 });
-            } else {
+            }else if(this.lastSelection === id){
+                //this.root.emit('labelDblClicked', id);
+                this.svgElement.remove();
+                this.svgElement = null;
+                this.lastSelection = null;
+            } else if (this.lastSelection !== id) {
+
                 this.root.emit('twoLabelsClicked', this.lastSelection, id);
                 this.svgElement.remove();
                 this.svgElement = null;

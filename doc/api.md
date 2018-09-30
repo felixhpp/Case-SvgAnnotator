@@ -46,11 +46,16 @@ Case-SvgAnnotator可以绑定到任何一个空HTML元素上。
 
 ```
 var options = {
+            // 是否允许同一块文本被不同的Label标记
+            allowMultipleLabel: true;
             maxLineWidth: 80,
             textSelected: function (startIndex, endIndex) {
-
+                
             },
             labelClicked: function (id) {
+
+            },
+            labelDblClicked：function (id) {
 
             },
             twoLabelsClicked: function (first, second) {
@@ -61,6 +66,9 @@ var options = {
             },
             connectionRightClicked: function (id, x, y) {
 	
+            }，
+            connectionDblClicked: function (id, x, y) {
+                
             }
         }
 
@@ -86,6 +94,13 @@ var options = {
 | ---- | ---------------- |
 | id   | 被点击的标注的id |
 
+#### labelDblClicked(id)
+左键双击了同一个Label后会触发事件回调函数
+
+| 参数 | 意义             |
+| ---- | ---------------- |
+| id   | 被点击的标注的id |
+
 #### twoLabelsClicked(first, second)
 用户先后左键点击了两个Label后事件回调函数
 
@@ -105,6 +120,15 @@ var options = {
 
 #### connectionRightClicked(id, x, y)
 用户右键点击了一个连接的文字部分后事件回调函数
+
+| 参数 | 意义              |
+| ---- | ----------------- |
+| id   | 被点击的连接的id  |
+| x    | 被点击时鼠标的X值 |
+| y    | 被点击时鼠标的Y值 |
+
+#### connectionDblClicked(id, x, y)
+用户双击击了一个连接的文字部分后事件回调函数
 
 | 参数 | 意义              |
 | ---- | ----------------- |

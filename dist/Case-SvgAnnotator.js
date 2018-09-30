@@ -17639,6 +17639,10 @@ var ConnectionView;
                 _this.context.attachTo.root.root.emit('connectionRightClicked', _this.id, e.clientX, e.clientY);
                 e.preventDefault();
             });
+            this.svgElement.on('dblclick', function (e) {
+                _this.context.attachTo.root.root.emit('connectionDblClicked', _this.id, e.clientX, e.clientY);
+                e.preventDefault();
+            });
             this.svgElement.addClass('connection-view');
             // to deceive svg.js not to call bbox when call x() and y()
             // bad for svg.js
@@ -17964,6 +17968,10 @@ var LabelView;
             this.annotationElement.addClass('label-view');
             this.annotationElement.on('click', function (e) {
                 _this.context.attachTo.root.root.emit('labelClicked', _this.id);
+                e.preventDefault();
+            });
+            this.annotationElement.on('dblclick', function (e) {
+                _this.context.attachTo.root.root.emit('labelDblClicked', _this.id);
                 e.preventDefault();
             });
             this.annotationElement.on('contextmenu', function (e) {
@@ -18684,7 +18692,13 @@ var TwoLabelsClickedHandler = /** @class */ (function () {
                     add.polyline('0,0 5,2.5 0,5 0.2,2.5');
                 });
             }
-            else {
+            else if (_this.lastSelection === id) {
+                //this.root.emit('labelDblClicked', id);
+                _this.svgElement.remove();
+                _this.svgElement = null;
+                _this.lastSelection = null;
+            }
+            else if (_this.lastSelection !== id) {
                 _this.root.emit('twoLabelsClicked', _this.lastSelection, id);
                 _this.svgElement.remove();
                 _this.svgElement = null;
@@ -18963,6 +18977,10 @@ var SvgAnnotator = /** @class */ (function () {
             CusAssert_1.cusAssert(typeof _this.options.labelRightClicked === "function", 'options "labelRightClicked" must is function type');
             _this.options.labelRightClicked(id, x, y);
         });
+        _annotator.on('labelDblClicked', function (id) {
+            CusAssert_1.cusAssert(typeof _this.options.labelDblClicked === "function", 'options "labelDblClicked" must is function type');
+            _this.options.labelDblClicked(id);
+        });
         _annotator.on('twoLabelsClicked', function (first, second) {
             CusAssert_1.cusAssert(typeof _this.options.twoLabelsClicked === "function", 'options "twoLabelsClicked" must is function type');
             _this.options.first = first;
@@ -18972,6 +18990,10 @@ var SvgAnnotator = /** @class */ (function () {
         _annotator.on('connectionRightClicked', function (id, x, y) {
             CusAssert_1.cusAssert(typeof _this.options.connectionRightClicked === "function", 'options "connectionRightClicked" must is function type');
             _this.options.connectionRightClicked(id, x, y);
+        });
+        _annotator.on('connectionDblClicked', function (id, x, y) {
+            CusAssert_1.cusAssert(typeof _this.options.connectionDblClicked === "function", 'options "connectionDblClicked" must is function type');
+            _this.options.connectionDblClicked(id, x, y);
         });
         //#endregion 
     }
@@ -19279,6 +19301,12 @@ var SvgAnnotatorDefaultOptions = /** @class */ (function () {
     SvgAnnotatorDefaultOptions.prototype.labelClicked = function (id) { };
     ;
     /**
+     * 用户左键双击了一个Label后会触发这个事
+     * @param id
+     */
+    SvgAnnotatorDefaultOptions.prototype.labelDblClicked = function (id) { };
+    ;
+    /**
    * 在用户右键点击了一个Label后会触发这个事件。
    * @param id 被点击的标注的id
    * @param x 被点击时鼠标的X值
@@ -19300,6 +19328,14 @@ var SvgAnnotatorDefaultOptions = /** @class */ (function () {
      * @param y 被点击时鼠标的Y值
      */
     SvgAnnotatorDefaultOptions.prototype.connectionRightClicked = function (id, x, y) { };
+    ;
+    /**
+     * 在用户双击击了一个连接的文字部分后会触发这个事件。
+     * @param id
+     * @param x
+     * @param y
+     */
+    SvgAnnotatorDefaultOptions.prototype.connectionDblClicked = function (id, x, y) { };
     ;
     return SvgAnnotatorDefaultOptions;
 }());

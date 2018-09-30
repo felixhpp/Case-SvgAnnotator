@@ -73,6 +73,10 @@ export namespace ConnectionView {
                 this.context.attachTo.root.root.emit('connectionRightClicked', this.id, e.clientX, e.clientY);
                 e.preventDefault();
             });
+            this.svgElement.on('dblclick', (e) => {
+                this.context.attachTo.root.root.emit('connectionDblClicked', this.id, e.clientX, e.clientY);
+                e.preventDefault();
+            });
             this.svgElement.addClass('connection-view');
             // to deceive svg.js not to call bbox when call x() and y()
             // bad for svg.js
