@@ -1,6 +1,6 @@
 # Case-SvgAnnotator.js
 
-结构化标注工具jQuery插件。
+文本结构化标注工具 - jQuery插件版本。
 
 [![license](https://img.shields.io/github/license/felixhpp/Case-SvgAnnotator.svg)](https://github.com/felixhpp/Case-SvgAnnotator/blob/master/LICENSE)
 [![version](https://img.shields.io/badge/npm%20version-1.2.1-brightgreen.svg)](https://www.npmjs.com/package/case-annotator)
