@@ -16648,7 +16648,7 @@ var Annotator = /** @class */ (function (_super) {
 }(events_1.EventEmitter));
 exports.Annotator = Annotator;
 
-},{"./Dispatcher/Dispatcher":204,"./Store/Store":213,"./View/EventHandler/TextSelectionHandler":219,"./View/EventHandler/TwoLabelsClickedHandler":220,"./View/View":221,"events":1}],204:[function(require,module,exports){
+},{"./Dispatcher/Dispatcher":204,"./Store/Store":212,"./View/EventHandler/TextSelectionHandler":218,"./View/EventHandler/TwoLabelsClickedHandler":219,"./View/View":220,"events":1}],204:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -16745,7 +16745,7 @@ var Dispatcher = /** @class */ (function () {
 }());
 exports.Dispatcher = Dispatcher;
 
-},{"../Action/Action":202,"../Store/Entities/Connection":208,"../Store/Entities/Label":210}],205:[function(require,module,exports){
+},{"../Action/Action":202,"../Store/Entities/Connection":207,"../Store/Entities/Label":209}],205:[function(require,module,exports){
 (function (process){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -16897,19 +16897,6 @@ var Base;
 
 },{"./Assert":205,"events":1,"rxjs":3}],207:[function(require,module,exports){
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * thanks to Pimp Trizkit (function for darken color)
- * @see https://stackoverflow.com/questions/5560248/programmatically-lighten-or-darken-a-hex-color-or-rgb-and-blend-colors
- */
-function shadeColor(color, percent) {
-    var f = parseInt(color.slice(1), 16), t = percent < 0 ? 0 : 255, p = percent < 0 ? percent * -1 : percent, R = f >> 16, G = f >> 8 & 0x00FF, B = f & 0x0000FF;
-    return "#" + (0x1000000 + (Math.round((t - R) * p) + R) * 0x10000 + (Math.round((t - G) * p) + G) * 0x100 + (Math.round((t - B) * p) + B)).toString(16).slice(1);
-}
-exports.shadeColor = shadeColor;
-
-},{}],208:[function(require,module,exports){
-"use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -17013,7 +17000,7 @@ var Connection;
     Connection.constructAll = constructAll;
 })(Connection = exports.Connection || (exports.Connection = {}));
 
-},{"../../Infrastructure/Repository":206}],209:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206}],208:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17033,9 +17020,10 @@ var Repository_1 = require("../../Infrastructure/Repository");
 var ConnectionCategory;
 (function (ConnectionCategory) {
     var Entity = /** @class */ (function () {
-        function Entity(id, text) {
+        function Entity(id, text, attributes) {
             this.id = id;
             this.text = text;
+            this.attributes = attributes;
         }
         return Entity;
     }());
@@ -17049,7 +17037,10 @@ var ConnectionCategory;
     }(Repository_1.Base.Repository));
     ConnectionCategory.Repository = Repository;
     function construct(json) {
-        return new Entity(parseInt(json.id), json.text);
+        if (!json.attributes) {
+            json.attributes = new Object();
+        }
+        return new Entity(parseInt(json.id), json.text, json.attributes);
     }
     ConnectionCategory.construct = construct;
     function constructAll(json) {
@@ -17058,7 +17049,7 @@ var ConnectionCategory;
     ConnectionCategory.constructAll = constructAll;
 })(ConnectionCategory = exports.ConnectionCategory || (exports.ConnectionCategory = {}));
 
-},{"../../Infrastructure/Repository":206}],210:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206}],209:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17248,7 +17239,7 @@ var Label;
     Label.constructAll = constructAll;
 })(Label = exports.Label || (exports.Label = {}));
 
-},{"../../Infrastructure/Repository":206,"rxjs":3}],211:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206,"rxjs":3}],210:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17265,15 +17256,15 @@ var __extends = (this && this.__extends) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 var Repository_1 = require("../../Infrastructure/Repository");
-var ShadeColor_1 = require("../../Infrastructure/ShadeColor");
 var LabelCategory;
 (function (LabelCategory) {
     var Entity = /** @class */ (function () {
-        function Entity(id, text, color, borderColor) {
+        function Entity(id, text, color, borderColor, attributes) {
             this.id = id;
             this.text = text;
             this.color = color;
             this.borderColor = borderColor;
+            this.attributes = attributes;
         }
         return Entity;
     }());
@@ -17287,7 +17278,6 @@ var LabelCategory;
     }(Repository_1.Base.Repository));
     LabelCategory.Repository = Repository;
     function construct(json) {
-        debugger;
         if (!(json.borderColor) && json["border-color"]) {
             json.borderColor = json["border-color"];
         }
@@ -17295,9 +17285,13 @@ var LabelCategory;
             json.color = "#ff9d61";
         }
         if (!(json.borderColor)) {
-            json.borderColor = ShadeColor_1.shadeColor(json.color, 30);
+            //json.borderColor = shadeColor(json.color, 30);
+            json.borderColor = "#000080";
         }
-        return new Entity(parseInt(json.id), json.text, json.color, json.borderColor);
+        if (!json.attributes) {
+            json.attributes = new Object();
+        }
+        return new Entity(parseInt(json.id), json.text, json.color, json.borderColor, json.attributes);
     }
     LabelCategory.construct = construct;
     function constructAll(json) {
@@ -17306,7 +17300,7 @@ var LabelCategory;
     LabelCategory.constructAll = constructAll;
 })(LabelCategory = exports.LabelCategory || (exports.LabelCategory = {}));
 
-},{"../../Infrastructure/Repository":206,"../../Infrastructure/ShadeColor":207}],212:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206}],211:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17407,7 +17401,7 @@ var Line;
     Line.construct = construct;
 })(Line = exports.Line || (exports.Line = {}));
 
-},{"../../Infrastructure/Assert":205,"../../Infrastructure/Repository":206}],213:[function(require,module,exports){
+},{"../../Infrastructure/Assert":205,"../../Infrastructure/Repository":206}],212:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -17542,7 +17536,7 @@ var Store = /** @class */ (function () {
 }());
 exports.Store = Store;
 
-},{"./Entities/Connection":208,"./Entities/ConnectionCategory":209,"./Entities/Label":210,"./Entities/LabelCategory":211,"./Entities/Line":212,"events":1,"rxjs":3}],214:[function(require,module,exports){
+},{"./Entities/Connection":207,"./Entities/ConnectionCategory":208,"./Entities/Label":209,"./Entities/LabelCategory":210,"./Entities/Line":211,"events":1,"rxjs":3}],213:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -17768,7 +17762,7 @@ var ConnectionView;
     ConnectionView.Repository = Repository;
 })(ConnectionView = exports.ConnectionView || (exports.ConnectionView = {}));
 
-},{"../../Infrastructure/Assert":205,"../../Infrastructure/Repository":206,"./TopContextUser":218,"rxjs/operators":200}],215:[function(require,module,exports){
+},{"../../Infrastructure/Assert":205,"../../Infrastructure/Repository":206,"./TopContextUser":217,"rxjs/operators":200}],214:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18000,7 +17994,7 @@ var LabelView;
     LabelView.Repository = Repository;
 })(LabelView = exports.LabelView || (exports.LabelView = {}));
 
-},{"../../Infrastructure/Repository":206,"./TopContextUser":218}],216:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206,"./TopContextUser":217}],215:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -18235,7 +18229,7 @@ var LineView;
     LineView.constructAll = constructAll;
 })(LineView = exports.LineView || (exports.LineView = {}));
 
-},{"../../Infrastructure/Repository":206,"./TopContext":217,"rxjs":3,"rxjs/operators":200}],217:[function(require,module,exports){
+},{"../../Infrastructure/Repository":206,"./TopContext":216,"rxjs":3,"rxjs/operators":200}],216:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -18506,7 +18500,7 @@ var TopContext = /** @class */ (function () {
 }());
 exports.TopContext = TopContext;
 
-},{"../../Infrastructure/Assert":205,"./ConnectionView":214,"./LabelView":215,"events":1,"rxjs":3,"rxjs/operators":200}],218:[function(require,module,exports){
+},{"../../Infrastructure/Assert":205,"./ConnectionView":213,"./LabelView":214,"events":1,"rxjs":3,"rxjs/operators":200}],217:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -18589,7 +18583,7 @@ var TopContextUser = /** @class */ (function () {
 }());
 exports.TopContextUser = TopContextUser;
 
-},{}],219:[function(require,module,exports){
+},{}],218:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -18672,7 +18666,7 @@ var TextSelectionHandler = /** @class */ (function () {
 }());
 exports.TextSelectionHandler = TextSelectionHandler;
 
-},{}],220:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var TwoLabelsClickedHandler = /** @class */ (function () {
@@ -18728,7 +18722,7 @@ var TwoLabelsClickedHandler = /** @class */ (function () {
 }());
 exports.TwoLabelsClickedHandler = TwoLabelsClickedHandler;
 
-},{}],221:[function(require,module,exports){
+},{}],220:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function (o) {
     var m = typeof Symbol === "function" && o[Symbol.iterator], i = 0;
@@ -18920,7 +18914,7 @@ var View = /** @class */ (function () {
 }());
 exports.View = View;
 
-},{"./Entities/ConnectionView":214,"./Entities/LabelView":215,"./Entities/LineView":216,"svg.js":201}],222:[function(require,module,exports){
+},{"./Entities/ConnectionView":213,"./Entities/LabelView":214,"./Entities/LineView":215,"svg.js":201}],221:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function cusAssert(condition, message) {
@@ -18930,7 +18924,7 @@ function cusAssert(condition, message) {
 }
 exports.cusAssert = cusAssert;
 
-},{}],223:[function(require,module,exports){
+},{}],222:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SvgAnnotatorOptions_1 = require("../SvgAnnotator/SvgAnnotatorOptions");
@@ -18953,6 +18947,7 @@ var SvgAnnotator = /** @class */ (function () {
         this.jsonData = _annotator.store.json;
         this.annotator1 = _annotator;
         this.options.originString = _annotator.store.content;
+        //#region 事件绑定
         _annotator.on('textSelected', function (startIndex, endIndex) {
             CusAssert_1.cusAssert(typeof _this.options.textSelected === "function", 'options "textSelected" must is function type');
             _this.options.startIndex = startIndex;
@@ -18978,18 +18973,15 @@ var SvgAnnotator = /** @class */ (function () {
             CusAssert_1.cusAssert(typeof _this.options.connectionRightClicked === "function", 'options "connectionRightClicked" must is function type');
             _this.options.connectionRightClicked(id, x, y);
         });
-        var head = document.getElementsByTagName('head')[0];
-        var style = document.createElement('style');
-        style.type = 'text/css';
-        style.appendChild(document.createTextNode('svg .label-view.label-highlighted rect {transition: all 0.15s;stroke: red;stroke-width:2;}'));
-        style.appendChild(document.createTextNode('svg .connection-view..connection-highlighted text {transition: all 0.15s;fill:#006699;cursor:pointer;text-decoration:underline;color:blue;}'));
-        head.appendChild(style);
+        //#endregion 
     }
     SvgAnnotator.prototype._applyAction = function (action) {
         _annotator.applyAction(action);
+        _annotator.view.resize();
         this.jsonData = _annotator.store.json;
     };
     ;
+    //#region 事件方法
     /**
      * 创建标注(Label)
      * @param categoryId
@@ -19069,12 +19061,29 @@ var SvgAnnotator = /** @class */ (function () {
         this._applyAction(Action_1.Action.Connection.Update(connectionId, categoryId));
     };
     ;
+    //#endregion
+    //#region 辅助方法
     SvgAnnotator.prototype.getJsonStr = function () {
         if (_annotator === null) {
             return '';
         }
         var str = JSON.stringify(_annotator.store.json, null, 2);
         return str;
+    };
+    ;
+    SvgAnnotator.prototype.getLabeCatelJsonById = function (id) {
+        var curJsonData = this.jsonData;
+        var json = new Object;
+        if (!curJsonData["labelCategories"]
+            && curJsonData["labelCategories"].length > 0) {
+            json = curJsonData["labelCategories"].forEach(function (item) {
+                if (item.id === id) {
+                    json = item;
+                    return false;
+                }
+            });
+        }
+        return json;
     };
     ;
     SvgAnnotator.prototype.getlabelElementById = function (labelId) {
@@ -19104,13 +19113,14 @@ var SvgAnnotator = /** @class */ (function () {
         }
         return connectionElement;
     };
+    ;
+    //#endregion
     /**
      * label高亮
      */
     SvgAnnotator.prototype.labelHighlighted = function (labelId) {
         var labelElement = this.getlabelElementById(labelId);
         if (labelElement !== null) {
-            //item.svgElement.stroke({width: 1.5, color: 'red'})
             //item.highLightElement.stroke({width: 1.5, color: 'red'})
             var itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
             var rectElement = itemElement[0].getElementsByTagName("rect");
@@ -19126,8 +19136,9 @@ var SvgAnnotator = /** @class */ (function () {
             var itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
             var rectElement = itemElement[0].getElementsByTagName("rect");
             var pathElement = itemElement[0].getElementsByTagName("path");
-            rectElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
-            pathElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
+            var curColor = labelElement.category.borderColor;
+            rectElement[0].style.cssText = "stroke: " + curColor + ";stroke-width:1";
+            pathElement[0].style.cssText = "stroke: " + curColor + ";stroke-width:1";
         }
     };
     ;
@@ -19238,7 +19249,7 @@ var SvgAnnotator = /** @class */ (function () {
 }());
 exports.SvgAnnotator = SvgAnnotator;
 
-},{"../Annotator/Action/Action":202,"../Annotator/Annotator":203,"../SvgAnnotator/CusAssert":222,"../SvgAnnotator/SvgAnnotatorOptions":224}],224:[function(require,module,exports){
+},{"../Annotator/Action/Action":202,"../Annotator/Annotator":203,"../SvgAnnotator/CusAssert":221,"../SvgAnnotator/SvgAnnotatorOptions":223}],223:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SvgAnnotatorDefaultOptions = /** @class */ (function () {
@@ -19294,7 +19305,7 @@ var SvgAnnotatorDefaultOptions = /** @class */ (function () {
 }());
 exports.SvgAnnotatorDefaultOptions = SvgAnnotatorDefaultOptions;
 
-},{}],225:[function(require,module,exports){
+},{}],224:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var SvgAnnotator_1 = require("./SvgAnnotator/SvgAnnotator");
@@ -19312,6 +19323,6 @@ interface JQuery{
 }
 */ 
 
-},{"./SvgAnnotator/SvgAnnotator":223}]},{},[225]);
+},{"./SvgAnnotator/SvgAnnotator":222}]},{},[224]);
 
 //# sourceMappingURL=Case-SvgAnnotator.js.map

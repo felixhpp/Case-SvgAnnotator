@@ -31,7 +31,8 @@ export namespace LabelCategory {
             json.color = "#ff9d61";
         }
         if (!(json.borderColor)) {
-            json.borderColor = shadeColor(json.color, 30);
+            //json.borderColor = shadeColor(json.color, 30);
+            json.borderColor = "#000080";
         }
         if (!json.attributes){
             json.attributes = new Object();

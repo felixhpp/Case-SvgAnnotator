@@ -25,6 +25,9 @@ export class SvgAnnotator {
         this.jsonData = _annotator.store.json;
         this.annotator1 = _annotator;
         this.options.originString = _annotator.store.content;
+
+        //#region 事件绑定
+
         _annotator.on('textSelected', (startIndex: number, endIndex: number) => {
             cusAssert(typeof this.options.textSelected === "function", 
                 'options "textSelected" must is function type');
@@ -63,20 +66,17 @@ export class SvgAnnotator {
 
             this.options.connectionRightClicked(id,x,y);
         });
-
-        const head = document.getElementsByTagName('head')[0];
-        const style = document.createElement('style');
-        style.type = 'text/css';
-        style.appendChild(document.createTextNode('svg .label-view.label-highlighted rect {transition: all 0.15s;stroke: red;stroke-width:2;}'));
-        style.appendChild(document.createTextNode('svg .connection-view..connection-highlighted text {transition: all 0.15s;fill:#006699;cursor:pointer;text-decoration:underline;color:blue;}'));
-        head.appendChild(style);
+        //#endregion 
     }
 
     private _applyAction(action: Action.IAction){
         _annotator.applyAction(action);
+        _annotator.view.resize();
         this.jsonData = _annotator.store.json;
     };
 
+    //#region 事件方法
+    
     /**
      * 创建标注(Label)
      * @param categoryId 
@@ -154,7 +154,10 @@ export class SvgAnnotator {
     public updateConnection (connectionId: number, categoryId: number) {
         this._applyAction(Action.Connection.Update(connectionId, categoryId));
     };
-  
+    //#endregion
+
+    //#region 辅助方法
+
     public getJsonStr(){
         if (_annotator === null) {
             return '';
@@ -162,6 +165,21 @@ export class SvgAnnotator {
         let str = JSON.stringify(_annotator.store.json, null, 2);
 
         return str;
+    };
+    public getLabeCatelJsonById(id){
+        let curJsonData = this.jsonData;
+        let json = new Object;
+        if(!curJsonData["labelCategories"] 
+            && curJsonData["labelCategories"].length > 0){
+            json = curJsonData["labelCategories"].forEach(item =>{
+                if(item.id === id){
+                    json = item;
+                    return false;
+                }
+            });
+        }
+
+        return json;
     };
 
     public getlabelElementById(labelId: number){
@@ -178,7 +196,7 @@ export class SvgAnnotator {
 
         return labelElement;
     };
-
+   
     public getConnectionElementById(id: number){
         let connectionElement:ConnectionView.Entity = null;
         let curConnectionViewRepo = _annotator.view.connectionViewRepo;
@@ -193,7 +211,11 @@ export class SvgAnnotator {
         }
 
         return connectionElement;
-    }
+    };
+
+    
+    //#endregion
+    
 
     /**
      * label高亮
@@ -201,13 +223,14 @@ export class SvgAnnotator {
     public labelHighlighted(labelId: number){
         let labelElement = this.getlabelElementById(labelId);
         if(labelElement !== null){
-            //item.svgElement.stroke({width: 1.5, color: 'red'})
+            
             //item.highLightElement.stroke({width: 1.5, color: 'red'})
             let itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
             let rectElement = itemElement[0].getElementsByTagName("rect");
             let pathElement = itemElement[0].getElementsByTagName("path");
             rectElement[0].style.cssText  = "stroke: red;stroke-width:2";
             pathElement[0].style.cssText  = "stroke: red;stroke-width:2";
+        
         }
         
     };
@@ -218,8 +241,11 @@ export class SvgAnnotator {
             let itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
             let rectElement = itemElement[0].getElementsByTagName("rect");
             let pathElement = itemElement[0].getElementsByTagName("path");
-            rectElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
-            pathElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
+            
+            let curColor = labelElement.category.borderColor;
+            
+            rectElement[0].style.cssText = "stroke: " + curColor + ";stroke-width:1";
+            pathElement[0].style.cssText = "stroke: " + curColor + ";stroke-width:1";
         }
     };
 

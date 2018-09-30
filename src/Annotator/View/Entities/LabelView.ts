@@ -76,7 +76,7 @@ export namespace LabelView {
             }
         }
 
-        private get category(): LabelCategory.Entity {
+        get category(): LabelCategory.Entity {
             return this.store.category;
         }
 

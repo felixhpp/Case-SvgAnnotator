@@ -170,7 +170,7 @@ export namespace ConnectionView {
                   ${this.to.annotationElementBox.container.x - 10}                     ${thisY},
                   ${this.to.annotationElementBox.container.x}                          ${toY}
                 `).stroke('black').fill('transparent');
-            }
+            } 
             this.lineElement.marker('end', 5, 5, function (add) {
                 add.polyline('0,0 5,2.5 0,5 0.2,2.5');
             });
