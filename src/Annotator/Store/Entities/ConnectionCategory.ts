@@ -5,7 +5,8 @@ export namespace ConnectionCategory {
     export class Entity {
         constructor(
             public readonly id: number,
-            public readonly text: string
+            public readonly text: string,
+            public readonly attributes: object
         ) {
         }
     }
@@ -19,7 +20,10 @@ export namespace ConnectionCategory {
     }
 
     export function construct(json: any): Entity {
-        return new Entity(parseInt(json.id), json.text);
+        if (!json.attributes){
+            json.attributes = new Object();
+        }
+        return new Entity(parseInt(json.id), json.text, json.attributes);
     }
 
     export function constructAll(json: Array<object>): Array<Entity> {
