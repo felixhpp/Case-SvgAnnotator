@@ -9,7 +9,8 @@ export namespace LabelCategory {
             public readonly id: number,
             public readonly text: string,
             public readonly color: string,
-            public readonly borderColor: string
+            public readonly borderColor: string,
+            public readonly attributes: object
         ) {
         }
     }
@@ -32,7 +33,11 @@ export namespace LabelCategory {
         if (!(json.borderColor)) {
             json.borderColor = shadeColor(json.color, 30);
         }
-        return new Entity(parseInt(json.id), json.text, json.color, json.borderColor);
+        if (!json.attributes){
+            json.attributes = new Object();
+        }
+        return new Entity(parseInt(json.id), json.text, 
+        json.color, json.borderColor, json.attributes);
     }
 
     export function constructAll(json: Array<object>): Array<Entity> {
