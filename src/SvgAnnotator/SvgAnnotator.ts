@@ -2,6 +2,9 @@ import {SvgAnnotatorOptions,SvgAnnotatorDefaultOptions} from '../SvgAnnotator/Sv
 import {Annotator} from '../Annotator/Annotator'
 import {Action} from '../Annotator/Action/Action'
 import {cusAssert} from "../SvgAnnotator/CusAssert";
+import { LabelView } from '../Annotator/View/Entities/LabelView';
+import { ConnectionView } from '../Annotator/View/Entities/ConnectionView';
+import { _Number } from '../../node_modules/svg.js';
 
 let _annotator:Annotator = null;
 //typescript:类 class
@@ -15,7 +18,8 @@ export class SvgAnnotator {
         this.options = $.extend({}, defaults, options);
   
         let config = {
-            maxLineWidth:this.options.maxLineWidth
+            maxLineWidth:this.options.maxLineWidth,
+            allowMultipleLabel:this.options.allowMultipleLabel
         };
         _annotator = new Annotator(data, htmlElement, config);
         this.jsonData = _annotator.store.json;
@@ -59,6 +63,13 @@ export class SvgAnnotator {
 
             this.options.connectionRightClicked(id,x,y);
         });
+
+        const head = document.getElementsByTagName('head')[0];
+        const style = document.createElement('style');
+        style.type = 'text/css';
+        style.appendChild(document.createTextNode('svg .label-view.label-highlighted rect {transition: all 0.15s;stroke: red;stroke-width:2;}'));
+        style.appendChild(document.createTextNode('svg .connection-view..connection-highlighted text {transition: all 0.15s;fill:#006699;cursor:pointer;text-decoration:underline;color:blue;}'));
+        head.appendChild(style);
     }
 
     private _applyAction(action: Action.IAction){
@@ -74,18 +85,16 @@ export class SvgAnnotator {
      */
     public createLabel (categoryId: number, startIndex: number, endIndex: number) {
         let isOvetlap:boolean=false;
-        if(!this.options.allowOverlapLabel){
-            let labels = ('labels' in this.jsonData) ?  this.jsonData['labels'] : [];
-            labels.forEach(item =>{
-                if(item.categoryId === categoryId 
-                && item.startIndex === startIndex 
-                && item.endIndex === endIndex){
-                    //cusAssert(false, "label not allow overlap.");
-                    isOvetlap = true;
-                    return false;
-                }
-            });
-        }
+        let labels = ('labels' in this.jsonData) ?  this.jsonData['labels'] : [];
+        labels.forEach(item =>{
+            if(item.categoryId === categoryId 
+            && item.startIndex === startIndex 
+            && item.endIndex === endIndex){
+                //cusAssert(false, "label not allow overlap.");
+                isOvetlap = true;
+                return false;
+            }
+        });
 
         if(!isOvetlap){
             this._applyAction(Action.Label.Create(categoryId, startIndex, endIndex));
@@ -116,17 +125,15 @@ export class SvgAnnotator {
      */
     public createConnection (categoryId: number, fromId: number, toId: number) {
         let isOvetlap:boolean=false;
-        if(!this.options.allowOverlapConnection){
-            let labels = ('connections' in this.jsonData) ?  this.jsonData['connections'] : [];
-            labels.forEach(item =>{
-                if(item.categoryId === categoryId 
-                && item.fromId === fromId 
-                && item.toId === toId){
-                    isOvetlap = true;
-                    return false;
-                }
-            });
-        }
+        let labels = ('connections' in this.jsonData) ?  this.jsonData['connections'] : [];
+        labels.forEach(item =>{
+            if(item.categoryId === categoryId 
+            && item.fromId === fromId 
+            && item.toId === toId){
+                isOvetlap = true;
+                return false;
+            }
+        });
 
         if(!isOvetlap){
             this._applyAction(Action.Connection.Create(categoryId, fromId, toId));
@@ -156,6 +163,90 @@ export class SvgAnnotator {
 
         return str;
     };
+
+    public getlabelElementById(labelId: number){
+        let curLabelViewRepo = _annotator.view.labelViewRepo;
+        let labelElement: LabelView.Entity = null;
+        if(curLabelViewRepo != null){
+            curLabelViewRepo.entities.forEach(item =>{
+                if(item.id === labelId){
+                    labelElement = item;
+                    return false;
+                }
+            });
+        }
+
+        return labelElement;
+    };
+
+    public getConnectionElementById(id: number){
+        let connectionElement:ConnectionView.Entity = null;
+        let curConnectionViewRepo = _annotator.view.connectionViewRepo;
+
+        if(curConnectionViewRepo != null){
+            curConnectionViewRepo.entities.forEach(item =>{
+                if(item.id === id){
+                    connectionElement = item;
+                    return false;
+                 }
+            });
+        }
+
+        return connectionElement;
+    }
+
+    /**
+     * label高亮
+     */
+    public labelHighlighted(labelId: number){
+        let labelElement = this.getlabelElementById(labelId);
+        if(labelElement !== null){
+            //item.svgElement.stroke({width: 1.5, color: 'red'})
+            //item.highLightElement.stroke({width: 1.5, color: 'red'})
+            let itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
+            let rectElement = itemElement[0].getElementsByTagName("rect");
+            let pathElement = itemElement[0].getElementsByTagName("path");
+            rectElement[0].style.cssText  = "stroke: red;stroke-width:2";
+            pathElement[0].style.cssText  = "stroke: red;stroke-width:2";
+        }
+        
+    };
+
+    public cancelLabelHighlighted(labelId:number){
+        let labelElement = this.getlabelElementById(labelId);
+        if(labelElement !== null){
+            let itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
+            let rectElement = itemElement[0].getElementsByTagName("rect");
+            let pathElement = itemElement[0].getElementsByTagName("path");
+            rectElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
+            pathElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
+        }
+    };
+
+    public connectionHighlighted(connectionId: number){
+        let connectionElement = this.getConnectionElementById(connectionId);
+        if(connectionElement !== null){
+            let fromId = connectionElement.from.id;
+            let endId = connectionElement.to.id;
+            let lineElement = connectionElement.lineElement;
+            this.labelHighlighted(fromId);
+            this.labelHighlighted(endId);
+            lineElement.stroke({width: 2, color: 'red'});
+        }
+    };
+
+    public cancelConnectionHighlighted(connectionId: number){
+        let connectionElement = this.getConnectionElementById(connectionId);
+        if(connectionElement !== null){
+            let fromId = connectionElement.from.id;
+            let endId = connectionElement.to.id;
+            let lineElement = connectionElement.lineElement;
+            this.cancelLabelHighlighted(fromId);
+            this.cancelLabelHighlighted(endId);
+            lineElement.stroke({width: 1, color: 'black'});
+        }
+    };
+
 
     public download(){
         let eleLink = document.createElement('a');

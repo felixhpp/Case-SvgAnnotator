@@ -16609,8 +16609,14 @@ var Annotator = /** @class */ (function (_super) {
         _this.htmlElement = htmlElement;
         _this.config = config;
         _this.store = new Store_1.Store();
-        if (_this.config && _this.config.maxLineWidth) {
-            _this.store.config.maxLineWidth = _this.config.maxLineWidth;
+        if (_this.config) {
+            var config_1 = _this.config;
+            if (config_1.maxLineWidth !== undefined) {
+                _this.store.config.maxLineWidth = config_1.maxLineWidth;
+            }
+            if (config_1.allowMultipleLabel !== undefined) {
+                _this.store.config.allowMultipleLabel = config_1.allowMultipleLabel;
+            }
         }
         _this.view = new View_1.View(htmlElement, _this);
         _this.dispatcher = new Dispatcher_1.Dispatcher(_this.store);
@@ -16654,6 +16660,22 @@ var __values = (this && this.__values) || function (o) {
         }
     };
 };
+var __read = (this && this.__read) || function (o, n) {
+    var m = typeof Symbol === "function" && o[Symbol.iterator];
+    if (!m) return o;
+    var i = m.call(o), r, ar = [], e;
+    try {
+        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+    }
+    catch (error) { e = { error: error }; }
+    finally {
+        try {
+            if (r && !r.done && (m = i["return"])) m.call(i);
+        }
+        finally { if (e) throw e.error; }
+    }
+    return ar;
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var Label_1 = require("../Store/Entities/Label");
 var Action_1 = require("../Action/Action");
@@ -16663,8 +16685,25 @@ var Dispatcher = /** @class */ (function () {
         this.store = store;
     }
     Dispatcher.prototype.dispatch = function (action) {
-        var e_1, _a;
+        var e_1, _a, e_2, _b;
         if (action instanceof Action_1.Action.Label.CreateLabelAction) {
+            if (!this.store.config.allowMultipleLabel) {
+                try {
+                    for (var _c = __values(this.store.labelRepo), _d = _c.next(); !_d.done; _d = _c.next()) {
+                        var _e = __read(_d.value, 2), _ = _e[0], label = _e[1];
+                        if (label.startIndex === action.startIndex && label.endIndex === action.endIndex) {
+                            return;
+                        }
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (_d && !_d.done && (_a = _c.return)) _a.call(_c);
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }
             this.store.labelRepo.add(new Label_1.Label.Entity(null, action.categoryId, action.startIndex, action.endIndex, this.store));
         }
         else if (action instanceof Action_1.Action.Label.DeleteLabelAction) {
@@ -16682,12 +16721,12 @@ var Dispatcher = /** @class */ (function () {
                     this.store.connectionRepo.add(connection);
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
-                    if (connections_1_1 && !connections_1_1.done && (_a = connections_1.return)) _a.call(connections_1);
+                    if (connections_1_1 && !connections_1_1.done && (_b = connections_1.return)) _b.call(connections_1);
                 }
-                finally { if (e_1) throw e_1.error; }
+                finally { if (e_2) throw e_2.error; }
             }
         }
         else if (action instanceof Action_1.Action.Connection.CreateConnectionAction) {
@@ -17248,6 +17287,7 @@ var LabelCategory;
     }(Repository_1.Base.Repository));
     LabelCategory.Repository = Repository;
     function construct(json) {
+        debugger;
         if (!(json.borderColor) && json["border-color"]) {
             json.borderColor = json["border-color"];
         }
@@ -17334,6 +17374,12 @@ var Line;
     function construct(root) {
         var result = [];
         var allContent = root.content.trim();
+        while (allContent.indexOf('\u3000') !== -1) {
+            allContent = allContent.replace('\u3000', ' ');
+        }
+        while (allContent.indexOf('  ') !== -1) {
+            allContent = allContent.replace('  ', ' ');
+        }
         var startIndex = 0;
         while (startIndex < allContent.length) {
             while (allContent[startIndex] === ' ' || allContent[startIndex] === '\n') {
@@ -17406,7 +17452,10 @@ var Store = /** @class */ (function () {
         this.labelRepo = new Label_1.Label.Repository(this);
         this.connectionCategoryRepo = new ConnectionCategory_1.ConnectionCategory.Repository(this);
         this.connectionRepo = new Connection_1.Connection.Repository(this);
-        this.config = { maxLineWidth: 80 };
+        this.config = {
+            maxLineWidth: 80,
+            allowMultipleLabel: true
+        };
         this.ready$ = rxjs_1.fromEvent(this.eventEmitter, 'ready');
         this.labelRepo.readyToCreate$.subscribe(function (it) {
             _this.mergeForLabel(it);
@@ -18743,6 +18792,7 @@ var View = /** @class */ (function () {
         LineView_1.LineView.constructAll(this).map(function (it) { return _this.lineViewRepo.add(it); });
     };
     View.prototype.render = function () {
+        var _this = this;
         var e_1, _a, e_2, _b, e_3, _c, e_4, _d, e_5, _e, e_6, _f, e_7, _g, e_8, _h;
         var head = document.getElementsByTagName('head')[0];
         var style = document.createElement('style');
@@ -18858,6 +18908,10 @@ var View = /** @class */ (function () {
             }
             finally { if (e_8) throw e_8.error; }
         }
+        this.resize();
+        this.svgDoc.on('mouseup', function () {
+            _this.root.textSelectionHandler.textSelected();
+        });
     };
     View.prototype.resize = function () {
         this.svgDoc.size(this.svgDoc.bbox().width + 50, this.svgDoc.bbox().height + 50);
@@ -18892,7 +18946,8 @@ var SvgAnnotator = /** @class */ (function () {
         var defaults = new SvgAnnotatorOptions_1.SvgAnnotatorDefaultOptions();
         this.options = $.extend({}, defaults, options);
         var config = {
-            maxLineWidth: this.options.maxLineWidth
+            maxLineWidth: this.options.maxLineWidth,
+            allowMultipleLabel: this.options.allowMultipleLabel
         };
         _annotator = new Annotator_1.Annotator(data, htmlElement, config);
         this.jsonData = _annotator.store.json;
@@ -18923,6 +18978,12 @@ var SvgAnnotator = /** @class */ (function () {
             CusAssert_1.cusAssert(typeof _this.options.connectionRightClicked === "function", 'options "connectionRightClicked" must is function type');
             _this.options.connectionRightClicked(id, x, y);
         });
+        var head = document.getElementsByTagName('head')[0];
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.appendChild(document.createTextNode('svg .label-view.label-highlighted rect {transition: all 0.15s;stroke: red;stroke-width:2;}'));
+        style.appendChild(document.createTextNode('svg .connection-view..connection-highlighted text {transition: all 0.15s;fill:#006699;cursor:pointer;text-decoration:underline;color:blue;}'));
+        head.appendChild(style);
     }
     SvgAnnotator.prototype._applyAction = function (action) {
         _annotator.applyAction(action);
@@ -18937,18 +18998,16 @@ var SvgAnnotator = /** @class */ (function () {
      */
     SvgAnnotator.prototype.createLabel = function (categoryId, startIndex, endIndex) {
         var isOvetlap = false;
-        if (!this.options.allowOverlapLabel) {
-            var labels = ('labels' in this.jsonData) ? this.jsonData['labels'] : [];
-            labels.forEach(function (item) {
-                if (item.categoryId === categoryId
-                    && item.startIndex === startIndex
-                    && item.endIndex === endIndex) {
-                    //cusAssert(false, "label not allow overlap.");
-                    isOvetlap = true;
-                    return false;
-                }
-            });
-        }
+        var labels = ('labels' in this.jsonData) ? this.jsonData['labels'] : [];
+        labels.forEach(function (item) {
+            if (item.categoryId === categoryId
+                && item.startIndex === startIndex
+                && item.endIndex === endIndex) {
+                //cusAssert(false, "label not allow overlap.");
+                isOvetlap = true;
+                return false;
+            }
+        });
         if (!isOvetlap) {
             this._applyAction(Action_1.Action.Label.Create(categoryId, startIndex, endIndex));
         }
@@ -18979,17 +19038,15 @@ var SvgAnnotator = /** @class */ (function () {
      */
     SvgAnnotator.prototype.createConnection = function (categoryId, fromId, toId) {
         var isOvetlap = false;
-        if (!this.options.allowOverlapConnection) {
-            var labels = ('connections' in this.jsonData) ? this.jsonData['connections'] : [];
-            labels.forEach(function (item) {
-                if (item.categoryId === categoryId
-                    && item.fromId === fromId
-                    && item.toId === toId) {
-                    isOvetlap = true;
-                    return false;
-                }
-            });
-        }
+        var labels = ('connections' in this.jsonData) ? this.jsonData['connections'] : [];
+        labels.forEach(function (item) {
+            if (item.categoryId === categoryId
+                && item.fromId === fromId
+                && item.toId === toId) {
+                isOvetlap = true;
+                return false;
+            }
+        });
         if (!isOvetlap) {
             this._applyAction(Action_1.Action.Connection.Create(categoryId, fromId, toId));
         }
@@ -19018,6 +19075,84 @@ var SvgAnnotator = /** @class */ (function () {
         }
         var str = JSON.stringify(_annotator.store.json, null, 2);
         return str;
+    };
+    ;
+    SvgAnnotator.prototype.getlabelElementById = function (labelId) {
+        var curLabelViewRepo = _annotator.view.labelViewRepo;
+        var labelElement = null;
+        if (curLabelViewRepo != null) {
+            curLabelViewRepo.entities.forEach(function (item) {
+                if (item.id === labelId) {
+                    labelElement = item;
+                    return false;
+                }
+            });
+        }
+        return labelElement;
+    };
+    ;
+    SvgAnnotator.prototype.getConnectionElementById = function (id) {
+        var connectionElement = null;
+        var curConnectionViewRepo = _annotator.view.connectionViewRepo;
+        if (curConnectionViewRepo != null) {
+            curConnectionViewRepo.entities.forEach(function (item) {
+                if (item.id === id) {
+                    connectionElement = item;
+                    return false;
+                }
+            });
+        }
+        return connectionElement;
+    };
+    /**
+     * label高亮
+     */
+    SvgAnnotator.prototype.labelHighlighted = function (labelId) {
+        var labelElement = this.getlabelElementById(labelId);
+        if (labelElement !== null) {
+            //item.svgElement.stroke({width: 1.5, color: 'red'})
+            //item.highLightElement.stroke({width: 1.5, color: 'red'})
+            var itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
+            var rectElement = itemElement[0].getElementsByTagName("rect");
+            var pathElement = itemElement[0].getElementsByTagName("path");
+            rectElement[0].style.cssText = "stroke: red;stroke-width:2";
+            pathElement[0].style.cssText = "stroke: red;stroke-width:2";
+        }
+    };
+    ;
+    SvgAnnotator.prototype.cancelLabelHighlighted = function (labelId) {
+        var labelElement = this.getlabelElementById(labelId);
+        if (labelElement !== null) {
+            var itemElement = labelElement.svgElement.node.getElementsByClassName("label-view");
+            var rectElement = itemElement[0].getElementsByTagName("rect");
+            var pathElement = itemElement[0].getElementsByTagName("path");
+            rectElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
+            pathElement[0].style.cssText = "stroke: #dddddd;stroke-width:1";
+        }
+    };
+    ;
+    SvgAnnotator.prototype.connectionHighlighted = function (connectionId) {
+        var connectionElement = this.getConnectionElementById(connectionId);
+        if (connectionElement !== null) {
+            var fromId = connectionElement.from.id;
+            var endId = connectionElement.to.id;
+            var lineElement = connectionElement.lineElement;
+            this.labelHighlighted(fromId);
+            this.labelHighlighted(endId);
+            lineElement.stroke({ width: 2, color: 'red' });
+        }
+    };
+    ;
+    SvgAnnotator.prototype.cancelConnectionHighlighted = function (connectionId) {
+        var connectionElement = this.getConnectionElementById(connectionId);
+        if (connectionElement !== null) {
+            var fromId = connectionElement.from.id;
+            var endId = connectionElement.to.id;
+            var lineElement = connectionElement.lineElement;
+            this.cancelLabelHighlighted(fromId);
+            this.cancelLabelHighlighted(endId);
+            lineElement.stroke({ width: 1, color: 'black' });
+        }
     };
     ;
     SvgAnnotator.prototype.download = function () {
@@ -19117,8 +19252,7 @@ var SvgAnnotatorDefaultOptions = /** @class */ (function () {
         this.first = -1;
         this.second = -1;
         this.maxLineWidth = 80;
-        this.allowOverlapLabel = true;
-        this.allowOverlapConnection = true;
+        this.allowMultipleLabel = true;
     }
     /**
      * 选取了一段文本后，会触发textSelected事件
