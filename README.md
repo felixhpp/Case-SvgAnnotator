@@ -10,7 +10,7 @@
 
 ## 声明
 
-本项目是对开源项目[poplar](https://github.com/synyi/poplar)扩展的一个jQuery插件版本，方便不是使用ES6的开发环境中调用，并优化了插件在谷歌浏览器的兼容性问题。如果您的开发环境为ES6，建议去看[poplar](https://github.com/synyi/poplar)。
+本项目是对项目[poplar](https://github.com/synyi/poplar)扩展的一个jQuery插件版本，方便在非ES6的开发环境中调用。此外还优化了插件在谷歌浏览器的兼容性问题，并新增了一些使用的方法。如果您的开发环境为ES6，建议去使用[poplar](https://github.com/synyi/poplar)。
 
 在此特别感谢@[synyi](https://github.com/synyi)的开源项目[poplar](https://github.com/synyi/poplar)。
 
