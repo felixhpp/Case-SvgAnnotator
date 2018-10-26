@@ -16502,16 +16502,18 @@ var Action;
     var Label;
     (function (Label) {
         var CreateLabelAction = /** @class */ (function () {
-            function CreateLabelAction(categoryId, startIndex, endIndex) {
+            function CreateLabelAction(categoryId, startIndex, endIndex, attributes) {
+                if (attributes === void 0) { attributes = {}; }
                 this.categoryId = categoryId;
                 this.startIndex = startIndex;
                 this.endIndex = endIndex;
+                this.attributes = attributes;
             }
             return CreateLabelAction;
         }());
         Label.CreateLabelAction = CreateLabelAction;
-        function Create(categoryId, startIndex, endIndex) {
-            return new CreateLabelAction(categoryId, startIndex, endIndex);
+        function Create(categoryId, startIndex, endIndex, attributes) {
+            return new CreateLabelAction(categoryId, startIndex, endIndex, attributes);
         }
         Label.Create = Create;
         var DeleteLabelAction = /** @class */ (function () {
@@ -16526,15 +16528,17 @@ var Action;
         }
         Label.Delete = Delete;
         var UpdateLabelAction = /** @class */ (function () {
-            function UpdateLabelAction(labelId, categoryId) {
+            function UpdateLabelAction(labelId, categoryId, attributes) {
+                if (attributes === void 0) { attributes = {}; }
                 this.labelId = labelId;
                 this.categoryId = categoryId;
+                this.attributes = attributes;
             }
             return UpdateLabelAction;
         }());
         Label.UpdateLabelAction = UpdateLabelAction;
-        function Update(labelId, categoryId) {
-            return new UpdateLabelAction(labelId, categoryId);
+        function Update(labelId, categoryId, attributes) {
+            return new UpdateLabelAction(labelId, categoryId, attributes);
         }
         Label.Update = Update;
     })(Label = Action.Label || (Action.Label = {}));
@@ -16704,7 +16708,7 @@ var Dispatcher = /** @class */ (function () {
                     finally { if (e_1) throw e_1.error; }
                 }
             }
-            this.store.labelRepo.add(new Label_1.Label.Entity(null, action.categoryId, action.startIndex, action.endIndex, this.store));
+            this.store.labelRepo.add(new Label_1.Label.Entity(null, action.categoryId, action.startIndex, action.endIndex, this.store, action.attributes));
         }
         else if (action instanceof Action_1.Action.Label.DeleteLabelAction) {
             this.store.labelRepo.delete(action.id);
@@ -16713,7 +16717,7 @@ var Dispatcher = /** @class */ (function () {
             var label = this.store.labelRepo.get(action.labelId);
             var connections = label.allConnections;
             this.store.labelRepo.delete(action.labelId);
-            this.store.labelRepo.add(new Label_1.Label.Entity(label.id, action.categoryId, label.startIndex, label.endIndex, this.store));
+            this.store.labelRepo.add(new Label_1.Label.Entity(label.id, action.categoryId, label.startIndex, label.endIndex, this.store, action.attributes));
             try {
                 for (var connections_1 = __values(connections), connections_1_1 = connections_1.next(); !connections_1_1.done; connections_1_1 = connections_1.next()) {
                     var connection = connections_1_1.value;
@@ -17096,12 +17100,14 @@ var rxjs_1 = require("rxjs");
 var Label;
 (function (Label) {
     var Entity = /** @class */ (function () {
-        function Entity(id, categoryId, startIndex, endIndex, root) {
+        function Entity(id, categoryId, startIndex, endIndex, root, attributes) {
+            if (attributes === void 0) { attributes = {}; }
             this.id = id;
             this.categoryId = categoryId;
             this.startIndex = startIndex;
             this.endIndex = endIndex;
             this.root = root;
+            this.attributes = attributes;
         }
         Object.defineProperty(Entity.prototype, "category", {
             get: function () {
@@ -17116,7 +17122,8 @@ var Label;
                     id: this.id,
                     categoryId: this.categoryId,
                     startIndex: this.startIndex,
-                    endIndex: this.endIndex
+                    endIndex: this.endIndex,
+                    attributes: this.attributes
                 };
             },
             enumerable: true,
@@ -17230,7 +17237,7 @@ var Label;
     }(Repository_1.Base.Repository));
     Label.Repository = Repository;
     function construct(json, root) {
-        return new Entity(parseInt(json.id), parseInt(json.categoryId), parseInt(json.startIndex), parseInt(json.endIndex), root);
+        return new Entity(parseInt(json.id), parseInt(json.categoryId), parseInt(json.startIndex), parseInt(json.endIndex), root, json.attributes);
     }
     Label.construct = construct;
     function constructAll(json, root) {
@@ -17524,6 +17531,11 @@ var Store = /** @class */ (function () {
             this.mergeLines(startInLineId, endInLineId);
         }
     };
+    /**
+     * 合并两行
+     * @param startInLineId
+     * @param endInLineId
+     */
     Store.prototype.mergeLines = function (startInLineId, endInLineId) {
         var startLine = this.lineRepo.get(startInLineId);
         var endLine = this.lineRepo.get(endInLineId);
@@ -18173,6 +18185,19 @@ var LineView;
             }
             var last = this.svgElement.node.getExtentOfChar(this.store.text.length - 1);
             this.xCoordinateOfChar.push(last.x + last.width);
+        };
+        Entity.prototype.Test = function () {
+            //this.rerender()
+            var oldHeight = this.topContext.height;
+            this.topContext.remove();
+            this.topContext = new TopContext_1.TopContext(this);
+            this.topContext.preRender(this.svgElement.doc());
+            this.topContext.initPosition();
+            this.layout();
+            this.layoutAfterSelf(this.topContext.height - oldHeight);
+            this.renderTopContext();
+            this.topContext.layout(null);
+            this.topContext.postRender();
         };
         Entity.prototype.rerender = function () {
             var oldHeight = this.topContext.height;
@@ -18921,6 +18946,29 @@ var View = /** @class */ (function () {
             _this.root.textSelectionHandler.textSelected();
         });
     };
+    View.prototype.rerendered = function (id) {
+        var e_9, _a;
+        try {
+            for (var _b = __values(this.lineViewRepo), _c = _b.next(); !_c.done; _c = _b.next()) {
+                var _d = __read(_c.value, 2), _ = _d[0], entity = _d[1];
+                if (id && id === entity.id) {
+                    entity.Test();
+                    break;
+                }
+                else {
+                    entity.Test();
+                }
+            }
+        }
+        catch (e_9_1) { e_9 = { error: e_9_1 }; }
+        finally {
+            try {
+                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
+            }
+            finally { if (e_9) throw e_9.error; }
+        }
+        this.resize();
+    };
     View.prototype.resize = function () {
         this.svgDoc.size(this.svgDoc.bbox().width + 50, this.svgDoc.bbox().height + 50);
     };
@@ -19003,6 +19051,10 @@ var SvgAnnotator = /** @class */ (function () {
         this.jsonData = _annotator.store.json;
     };
     ;
+    SvgAnnotator.prototype.remove = function () {
+        _annotator.remove();
+    };
+    ;
     //#region 事件方法
     /**
      * 创建标注(Label)
@@ -19010,7 +19062,7 @@ var SvgAnnotator = /** @class */ (function () {
      * @param startIndex
      * @param endIndex
      */
-    SvgAnnotator.prototype.createLabel = function (categoryId, startIndex, endIndex) {
+    SvgAnnotator.prototype.createLabel = function (categoryId, startIndex, endIndex, attributes) {
         var isOvetlap = false;
         var labels = ('labels' in this.jsonData) ? this.jsonData['labels'] : [];
         labels.forEach(function (item) {
@@ -19023,16 +19075,20 @@ var SvgAnnotator = /** @class */ (function () {
             }
         });
         if (!isOvetlap) {
-            this._applyAction(Action_1.Action.Label.Create(categoryId, startIndex, endIndex));
+            this._applyAction(Action_1.Action.Label.Create(categoryId, startIndex, endIndex, attributes));
         }
     };
     ;
     /**
      * 删除标注(Label)
-     * @param categoryId
+     * @param id
      */
-    SvgAnnotator.prototype.deleteLabel = function (categoryId) {
-        this._applyAction(Action_1.Action.Label.Delete(categoryId));
+    SvgAnnotator.prototype.deleteLabel = function (id) {
+        var labelViewRepoEntity = this.getLabelLineById(id);
+        this._applyAction(Action_1.Action.Label.Delete(id));
+        if (labelViewRepoEntity != null) {
+            _annotator.view.rerendered(labelViewRepoEntity.id);
+        }
     };
     ;
     /**
@@ -19040,8 +19096,12 @@ var SvgAnnotator = /** @class */ (function () {
      * @param labelId
      * @param categoryId
      */
-    SvgAnnotator.prototype.updateLabel = function (labelId, categoryId) {
-        this._applyAction(Action_1.Action.Label.Update(labelId, categoryId));
+    SvgAnnotator.prototype.updateLabel = function (labelId, categoryId, attributes) {
+        var labelViewRepoEntity = this.getLabelLineById(labelId);
+        this._applyAction(Action_1.Action.Label.Update(labelId, categoryId, attributes));
+        if (labelViewRepoEntity != null) {
+            _annotator.view.rerendered(labelViewRepoEntity.id);
+        }
     };
     ;
     /**

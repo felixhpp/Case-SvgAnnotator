@@ -104,6 +104,21 @@ export namespace LineView {
             this.xCoordinateOfChar.push(last.x + last.width);
         }
 
+        public Test(){
+            //this.rerender()
+            const oldHeight = this.topContext.height;
+            this.topContext.remove();
+
+            this.topContext = new TopContext(this);
+            this.topContext.preRender(this.svgElement.doc() as SVG.Doc);
+            this.topContext.initPosition();
+            this.layout();
+            this.layoutAfterSelf(this.topContext.height - oldHeight);
+            this.renderTopContext();
+            this.topContext.layout(null);
+            this.topContext.postRender();
+        }
+
         private rerender() {
             const oldHeight = this.topContext.height;
             this.topContext.remove();

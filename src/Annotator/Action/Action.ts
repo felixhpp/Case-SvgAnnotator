@@ -10,12 +10,12 @@ export namespace Action {
 
     export namespace Label {
         export class CreateLabelAction implements IAction {
-            constructor(public categoryId: number, public startIndex: number, public endIndex: number) {
+            constructor(public categoryId: number, public startIndex: number, public endIndex: number, public attributes: object = {}) {
             }
         }
 
-        export function Create(categoryId: number, startIndex: number, endIndex: number) {
-            return new CreateLabelAction(categoryId, startIndex, endIndex);
+        export function Create(categoryId: number, startIndex: number, endIndex: number, attributes?: object) {
+            return new CreateLabelAction(categoryId, startIndex, endIndex, attributes);
         }
 
         export class DeleteLabelAction implements IAction {
@@ -28,12 +28,12 @@ export namespace Action {
         }
 
         export class UpdateLabelAction implements IAction {
-            constructor(public labelId: number, public categoryId: number) {
+            constructor(public labelId: number, public categoryId: number, public attributes: object = {}) {
             }
         }
 
-        export function Update(labelId: number, categoryId: number) {
-            return new UpdateLabelAction(labelId, categoryId);
+        export function Update(labelId: number, categoryId: number, attributes?: object) {
+            return new UpdateLabelAction(labelId, categoryId, attributes);
         }
     }
 
@@ -43,7 +43,7 @@ export namespace Action {
             }
         }
 
-        export function Create(categoryId: number, fromId: number, toId: number) {
+        export function Create(categoryId: number, fromId: number, toId: number ) {
             return new CreateConnectionAction(categoryId, fromId, toId);
         }
 

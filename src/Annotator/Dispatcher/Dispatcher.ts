@@ -18,14 +18,14 @@ export class Dispatcher {
                     }
                 }
             }
-            this.store.labelRepo.add(new Label.Entity(null, action.categoryId, action.startIndex, action.endIndex, this.store));
+            this.store.labelRepo.add(new Label.Entity(null, action.categoryId, action.startIndex, action.endIndex, this.store, action.attributes));
         } else if (action instanceof Action.Label.DeleteLabelAction) {
             this.store.labelRepo.delete(action.id);
         } else if (action instanceof Action.Label.UpdateLabelAction) {
             const label = this.store.labelRepo.get(action.labelId);
             const connections = label.allConnections;
             this.store.labelRepo.delete(action.labelId);
-            this.store.labelRepo.add(new Label.Entity(label.id, action.categoryId, label.startIndex, label.endIndex, this.store));
+            this.store.labelRepo.add(new Label.Entity(label.id, action.categoryId, label.startIndex, label.endIndex, this.store, action.attributes));
             for (let connection of connections) {
                 this.store.connectionRepo.delete(connection);
                 this.store.connectionRepo.add(connection);

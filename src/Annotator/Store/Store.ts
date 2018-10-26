@@ -89,6 +89,11 @@ export class Store implements RepositoryRoot {
         }
     }
 
+    /**
+     * 合并两行
+     * @param startInLineId 
+     * @param endInLineId 
+     */
     private mergeLines(startInLineId: number, endInLineId: number) {
         const startLine = this.lineRepo.get(startInLineId);
         const endLine = this.lineRepo.get(endInLineId);

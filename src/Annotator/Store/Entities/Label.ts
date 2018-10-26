@@ -10,7 +10,8 @@ export namespace Label {
             private readonly categoryId: number,
             public readonly startIndex: number,
             public readonly endIndex: number,
-            private readonly root: Store
+            private readonly root: Store,
+            public readonly attributes: object = {}
         ) {
         }
 
@@ -23,7 +24,8 @@ export namespace Label {
                 id: this.id,
                 categoryId: this.categoryId,
                 startIndex: this.startIndex,
-                endIndex: this.endIndex
+                endIndex: this.endIndex,
+                attributes: this.attributes
             }
         }
 
@@ -86,7 +88,7 @@ export namespace Label {
     }
 
     export function construct(json: any, root: Store): Entity {
-        return new Entity(parseInt(json.id), parseInt(json.categoryId), parseInt(json.startIndex), parseInt(json.endIndex), root);
+        return new Entity(parseInt(json.id), parseInt(json.categoryId), parseInt(json.startIndex), parseInt(json.endIndex), root, json.attributes);
     }
 
     export function constructAll(json: Array<any>, root: Store): Array<Entity> {

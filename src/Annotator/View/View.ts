@@ -38,6 +38,7 @@ export class View implements RepositoryRoot {
 
     render() {
         const head = document.getElementsByTagName('head')[0];
+
         const style = document.createElement('style');
         style.type = 'text/css';
         style.appendChild(document.createTextNode('svg .label-view:hover rect {transition: all 0.15s;stroke: red;stroke-width:2;}'));
@@ -75,6 +76,18 @@ export class View implements RepositoryRoot {
         this.svgDoc.on('mouseup', ()=>{
             this.root.textSelectionHandler.textSelected();
         });
+    }
+
+    rerendered(id?:number){
+        for (let [_, entity] of this.lineViewRepo) {
+            if(id && id === entity.id){
+                entity.Test();
+                break;
+            }else{
+                entity.Test();
+            }     
+        }
+        this.resize();
     }
 
     resize() {
