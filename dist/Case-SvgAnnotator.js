@@ -17528,11 +17528,12 @@ var Store = /** @class */ (function () {
             finally { if (e_1) throw e_1.error; }
         }
         if (startInLineId !== endInLineId) {
-            this.mergeLines(startInLineId, endInLineId);
+            //this.mergeLines(startInLineId, endInLineId);
+            this.mergeLinesForLabel(theLabel, startInLineId, endInLineId);
         }
     };
     /**
-     * 合并两行
+     * 合并两行 --- 粗暴的直接把两行合并
      * @param startInLineId
      * @param endInLineId
      */
@@ -17543,6 +17544,87 @@ var Store = /** @class */ (function () {
             this.lineRepo.delete(i);
         }
         this.lineRepo.set(startInLineId, new Line_1.Line.Entity(startInLineId, startLine.allContent, startLine.startIndex, endLine.endIndex, this));
+    };
+    /**
+     * 合并两行 --- 把实体部分合并到另一行
+     * @param theLabel
+     * @param startInLineId
+     * @param endInLineId
+     * @param preLabel true: 实体前置，合并到startInLine， false: 实体后置，合并到 endInLine
+     */
+    Store.prototype.mergeLinesForLabel = function (theLabel, startInLineId, endInLineId) {
+        var e_2, _a, e_3, _b;
+        var startLine = this.lineRepo.get(startInLineId);
+        var endLine = this.lineRepo.get(endInLineId);
+        var startInLineLabels = startLine.labelsInThisLine;
+        var endInLineLabels = endLine.labelsInThisLine;
+        var isStartIntersect = false; //是否在第一行中和其他label有交集
+        var isEndIntersect = false; //是否在第二行中和其他label有交集
+        try {
+            for (var startInLineLabels_1 = __values(startInLineLabels), startInLineLabels_1_1 = startInLineLabels_1.next(); !startInLineLabels_1_1.done; startInLineLabels_1_1 = startInLineLabels_1.next()) {
+                var item = startInLineLabels_1_1.value;
+                if (item.id !== theLabel.id && this.IsIntersect(item, theLabel)) {
+                    isStartIntersect = true;
+                    break;
+                }
+            }
+        }
+        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        finally {
+            try {
+                if (startInLineLabels_1_1 && !startInLineLabels_1_1.done && (_a = startInLineLabels_1.return)) _a.call(startInLineLabels_1);
+            }
+            finally { if (e_2) throw e_2.error; }
+        }
+        try {
+            for (var endInLineLabels_1 = __values(endInLineLabels), endInLineLabels_1_1 = endInLineLabels_1.next(); !endInLineLabels_1_1.done; endInLineLabels_1_1 = endInLineLabels_1.next()) {
+                var item = endInLineLabels_1_1.value;
+                if (item.id !== theLabel.id && this.IsIntersect(item, theLabel)) {
+                    isEndIntersect = true;
+                    break;
+                }
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (endInLineLabels_1_1 && !endInLineLabels_1_1.done && (_b = endInLineLabels_1.return)) _b.call(endInLineLabels_1);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
+        if (!isStartIntersect && !isEndIntersect) {
+            var startMaxWidth = theLabel.endIndex - startLine.startIndex;
+            var endMaxWidth = endLine.endIndex - theLabel.startIndex;
+            if (startMaxWidth <= this.config.maxLineWidth) { //前置
+                this.lineRepo.set(startInLineId, new Line_1.Line.Entity(startInLineId, startLine.allContent, startLine.startIndex, theLabel.endIndex, this));
+                this.lineRepo.set(endInLineId, new Line_1.Line.Entity(endInLineId, startLine.allContent, theLabel.endIndex, endLine.endIndex, this));
+            }
+            else {
+                this.lineRepo.set(startInLineId, new Line_1.Line.Entity(startInLineId, startLine.allContent, startLine.startIndex, theLabel.startIndex, this));
+                this.lineRepo.set(endInLineId, new Line_1.Line.Entity(endInLineId, startLine.allContent, theLabel.startIndex, endLine.endIndex, this));
+            }
+        }
+        else if (isStartIntersect && !isEndIntersect) { //实体前置
+            this.lineRepo.set(startInLineId, new Line_1.Line.Entity(startInLineId, startLine.allContent, startLine.startIndex, theLabel.endIndex, this));
+            this.lineRepo.set(endInLineId, new Line_1.Line.Entity(endInLineId, startLine.allContent, theLabel.endIndex, endLine.endIndex, this));
+        }
+        else if (!isStartIntersect && isEndIntersect) { //实体后置
+            this.lineRepo.set(startInLineId, new Line_1.Line.Entity(startInLineId, startLine.allContent, startLine.startIndex, theLabel.startIndex, this));
+            this.lineRepo.set(endInLineId, new Line_1.Line.Entity(endInLineId, startLine.allContent, theLabel.startIndex, endLine.endIndex, this));
+        }
+        else {
+            this.mergeLines(startInLineId, endInLineId);
+        }
+    };
+    //判断两个label 是否有交集
+    Store.prototype.IsIntersect = function (firstLabel, secondLabel) {
+        var ret = false;
+        var max = [firstLabel.startIndex, secondLabel.startIndex];
+        var min = [firstLabel.endIndex, secondLabel.endIndex];
+        if (Math.max.apply(null, max) <= Math.min.apply(null, min)) {
+            ret = true;
+        }
+        return ret;
     };
     return Store;
 }());
@@ -19085,10 +19167,14 @@ var SvgAnnotator = /** @class */ (function () {
      */
     SvgAnnotator.prototype.deleteLabel = function (id) {
         var labelViewRepoEntity = this.getLabelLineById(id);
+        var labelElement = this.getlabelElementById(id);
         this._applyAction(Action_1.Action.Label.Delete(id));
-        if (labelViewRepoEntity != null) {
-            _annotator.view.rerendered(labelViewRepoEntity.id);
+        if (labelViewRepoEntity != null
+            && !labelViewRepoEntity.isFirst) {
+            // _annotator.store.mergeLinesForLabel(labelElement.store, 
+            //     labelViewRepoEntity.prev.id, labelViewRepoEntity.id);
         }
+        _annotator.view.rerendered(labelViewRepoEntity.id);
     };
     ;
     /**
@@ -19269,17 +19355,7 @@ var SvgAnnotator = /** @class */ (function () {
         if (curLabelViewRepo != null) {
             curLabelViewRepo.entities.forEach(function (item) {
                 if (item.id === id) {
-                    var curStore = item.context.attachTo.store;
-                    var startIndexInLine = item.store.startIndex - curStore.startIndex;
-                    var endIndexInLine = item.store.endIndex - curStore.startIndex;
-                    labelViewRepoEntity = {
-                        labelId: id,
-                        curLineText: curStore.text,
-                        startIndexInLine: startIndexInLine,
-                        endIndexInLine: endIndexInLine,
-                        startIndex: curStore.startIndex,
-                        endIndex: curStore.endIndex
-                    };
+                    labelViewRepoEntity = item.context.attachTo;
                     return false;
                 }
             });
@@ -19311,8 +19387,8 @@ var SvgAnnotator = /** @class */ (function () {
             var formLableLine = this.getLabelLineById(connectionLineRepoEntity.fromId);
             var toLabelLine = this.getLabelLineById(connectionLineRepoEntity.toId);
             if (formLableLine != null && toLabelLine != null) {
-                var startIndex = formLableLine.startIndex;
-                var endIndex = toLabelLine.endIndex;
+                var startIndex = formLableLine.store.startIndex;
+                var endIndex = toLabelLine.store.endIndex;
                 var lineText = this.options.originString.slice(startIndex, endIndex);
                 connectionLineRepoEntity = {
                     connection: id,

@@ -5,6 +5,7 @@ import { cusAssert } from "../SvgAnnotator/CusAssert";
 import { LabelView } from '../Annotator/View/Entities/LabelView';
 import { ConnectionView } from '../Annotator/View/Entities/ConnectionView';
 import { _Number } from '../../node_modules/svg.js';
+import { LineView } from '../Annotator/View/Entities/LineView';
 
 let _annotator: Annotator = null;
 //typescript:类 class
@@ -125,12 +126,16 @@ export class SvgAnnotator {
      * @param id 
      */
     public deleteLabel(id: number) {
-        let labelViewRepoEntity = this.getLabelLineById(id)
+        let labelViewRepoEntity = this.getLabelLineById(id);
+        let labelElement = this.getlabelElementById(id);
         this._applyAction(Action.Label.Delete(id));
-        if (labelViewRepoEntity != null) {
-            _annotator.view.rerendered(labelViewRepoEntity.id);
+        if (labelViewRepoEntity != null
+             && !labelViewRepoEntity.isFirst) {
+            // _annotator.store.mergeLinesForLabel(labelElement.store, 
+            //     labelViewRepoEntity.prev.id, labelViewRepoEntity.id);
         }
         
+        _annotator.view.rerendered(labelViewRepoEntity.id);
     };
     /**
      * 修改标注(Label)
@@ -319,22 +324,11 @@ export class SvgAnnotator {
      */
     public getLabelLineById(id: number) {
         let curLabelViewRepo = _annotator.view.labelViewRepo;
-        let labelViewRepoEntity = null;
+        let labelViewRepoEntity:LineView.Entity = null;
         if (curLabelViewRepo != null) {
             curLabelViewRepo.entities.forEach(item => {
                 if (item.id === id) {
-                    let curStore = item.context.attachTo.store;
-                    let startIndexInLine = item.store.startIndex - curStore.startIndex;
-                    let endIndexInLine = item.store.endIndex - curStore.startIndex;
-                    labelViewRepoEntity = {
-                        labelId: id,
-                        curLineText: curStore.text,
-                        startIndexInLine: startIndexInLine,
-                        endIndexInLine: endIndexInLine,
-                        startIndex: curStore.startIndex,
-                        endIndex: curStore.endIndex
-                    }
-
+                    labelViewRepoEntity = item.context.attachTo
                     return false;
                 }
             });
@@ -370,8 +364,8 @@ export class SvgAnnotator {
             let toLabelLine = this.getLabelLineById(connectionLineRepoEntity.toId);
 
             if (formLableLine != null && toLabelLine != null) {
-                let startIndex: number = formLableLine.startIndex;
-                let endIndex: number = toLabelLine.endIndex;
+                let startIndex: number = formLableLine.store.startIndex;
+                let endIndex: number = toLabelLine.store.endIndex;
                 let lineText = this.options.originString.slice(startIndex, endIndex)
                 connectionLineRepoEntity = {
                     connection: id,

@@ -79,6 +79,7 @@ export class View implements RepositoryRoot {
     }
 
     rerendered(id?:number){
+        
         for (let [_, entity] of this.lineViewRepo) {
             if(id && id === entity.id){
                 entity.Test();
