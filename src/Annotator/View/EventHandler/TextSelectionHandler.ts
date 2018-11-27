@@ -1,5 +1,6 @@
-import {Annotator} from "../../Annotator";
-import {LineView} from "../Entities/LineView";
+import { Annotator } from "../../Annotator";
+import { LineView } from "../Entities/LineView";
+import { identity } from "../../../../node_modules/rxjs";
 
 export class TextSelectionHandler {
     selectLengthLimit = 80;
@@ -48,6 +49,26 @@ export class TextSelectionHandler {
         if (startIndex >= endIndex) {
             return null;
         }
+
+        //get highlightElementBox
+        // const startIndexInLine = selection.anchorOffset;
+        // const endIndexInLine = selection.focusOffset;
+        // const parent = startLineView; //=>
+        // const firstCharX = parent.xCoordinateOfChar[startIndexInLine];
+        // const endCharX = parent.xCoordinateOfChar[endIndexInLine];
+        // var highlightElementBox = {
+        //         x: firstCharX,
+        //         y: parent.y,
+        //         width: endCharX - firstCharX,
+        //         height: 20
+        //     }
+        // let box = highlightElementBox;
+        // var highLightElement = startLineView.topContext.svgElement.rect(box.width, box.height);
+        // highLightElement.fill({
+        //     color: "red",
+        //     opacity: 0.5
+        // }).dx(box.x);
+
         return {
             startIndex: startIndex,
             endIndex: endIndex

@@ -1,5 +1,5 @@
 import * as SVG from "svg.js";
-import {TopContext} from "./TopContext";
+import { TopContext } from "./TopContext";
 
 export abstract class TopContextUser {
     layer: number;
@@ -23,6 +23,7 @@ export abstract class TopContextUser {
     abstract initPosition()
 
     private get overlapping() {
+
         let allElementsInThisLayer = new Set();
         for (let ele of this.context.elements) {
             if (ele !== this && ele.layer === this.layer) {
@@ -36,10 +37,12 @@ export abstract class TopContextUser {
             let otherLeftX = other.x;
             let otherWidth = other.width;
             let otherRightX = otherLeftX + otherWidth;
-            if ((thisLeftX <= otherLeftX && otherLeftX <= thisRightX) ||
-                (thisLeftX <= otherRightX && otherRightX <= thisRightX) ||
-                (thisLeftX <= otherLeftX && otherRightX <= thisRightX) ||
-                (otherLeftX <= thisLeftX && thisRightX <= otherRightX)) {
+
+            //判断是否有重叠
+            let max = [thisLeftX, otherLeftX];
+            let min = [thisRightX, otherRightX];
+            if (Math.max.apply(null, max) < Math.min.apply(null, min)) {
+                // 区间存在重叠交叉
                 return true;
             }
         }

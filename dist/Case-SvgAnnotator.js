@@ -16882,6 +16882,7 @@ var Base;
         Repository.prototype[Symbol.iterator] = function () {
             return this.entities[Symbol.iterator]();
         };
+        //判断
         Repository.prototype.delete = function (key) {
             if (typeof key === 'number' && this.has(key)) {
                 var entity = this.entities.get(key);
@@ -18268,6 +18269,9 @@ var LineView;
             var last = this.svgElement.node.getExtentOfChar(this.store.text.length - 1);
             this.xCoordinateOfChar.push(last.x + last.width);
         };
+        /**
+         * 重新渲染指定行
+         */
         Entity.prototype.Test = function () {
             //this.rerender()
             var oldHeight = this.topContext.height;
@@ -18667,10 +18671,11 @@ var TopContextUser = /** @class */ (function () {
                     var otherLeftX = other.x;
                     var otherWidth = other.width;
                     var otherRightX = otherLeftX + otherWidth;
-                    if ((thisLeftX <= otherLeftX && otherLeftX <= thisRightX) ||
-                        (thisLeftX <= otherRightX && otherRightX <= thisRightX) ||
-                        (thisLeftX <= otherLeftX && otherRightX <= thisRightX) ||
-                        (otherLeftX <= thisLeftX && thisRightX <= otherRightX)) {
+                    //判断是否有重叠
+                    var max = [thisLeftX, otherLeftX];
+                    var min = [thisRightX, otherRightX];
+                    if (Math.max.apply(null, max) < Math.min.apply(null, min)) {
+                        // 区间存在重叠交叉
                         return true;
                     }
                 }
@@ -18765,6 +18770,24 @@ var TextSelectionHandler = /** @class */ (function () {
         if (startIndex >= endIndex) {
             return null;
         }
+        //get highlightElementBox
+        // const startIndexInLine = selection.anchorOffset;
+        // const endIndexInLine = selection.focusOffset;
+        // const parent = startLineView; //=>
+        // const firstCharX = parent.xCoordinateOfChar[startIndexInLine];
+        // const endCharX = parent.xCoordinateOfChar[endIndexInLine];
+        // var highlightElementBox = {
+        //         x: firstCharX,
+        //         y: parent.y,
+        //         width: endCharX - firstCharX,
+        //         height: 20
+        //     }
+        // let box = highlightElementBox;
+        // var highLightElement = startLineView.topContext.svgElement.rect(box.width, box.height);
+        // highLightElement.fill({
+        //     color: "red",
+        //     opacity: 0.5
+        // }).dx(box.x);
         return {
             startIndex: startIndex,
             endIndex: endIndex
@@ -19026,6 +19049,13 @@ var View = /** @class */ (function () {
         this.resize();
         this.svgDoc.on('mouseup', function () {
             _this.root.textSelectionHandler.textSelected();
+        });
+        this.svgDoc.on('mouseover', function (e) {
+            if (e.which === 1) {
+                if (window.getSelection) {
+                    window.console.log("高亮");
+                }
+            }
         });
     };
     View.prototype.rerendered = function (id) {

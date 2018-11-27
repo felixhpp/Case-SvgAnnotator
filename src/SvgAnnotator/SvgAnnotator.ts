@@ -129,11 +129,6 @@ export class SvgAnnotator {
         let labelViewRepoEntity = this.getLabelLineById(id);
         let labelElement = this.getlabelElementById(id);
         this._applyAction(Action.Label.Delete(id));
-        if (labelViewRepoEntity != null
-             && !labelViewRepoEntity.isFirst) {
-            // _annotator.store.mergeLinesForLabel(labelElement.store, 
-            //     labelViewRepoEntity.prev.id, labelViewRepoEntity.id);
-        }
         
         _annotator.view.rerendered(labelViewRepoEntity.id);
     };

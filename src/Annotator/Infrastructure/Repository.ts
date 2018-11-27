@@ -73,10 +73,12 @@ export namespace Base {
             this.set(key, value);
             return key;
         }
-
+        
         [Symbol.iterator](): Iterator<[number, T]> {
             return this.entities[Symbol.iterator]();
         }
+
+        //判断
 
         delete(key: number | T): boolean {
             if (typeof key === 'number' && this.has(key)) {

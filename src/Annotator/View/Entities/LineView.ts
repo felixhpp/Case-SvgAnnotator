@@ -104,6 +104,9 @@ export namespace LineView {
             this.xCoordinateOfChar.push(last.x + last.width);
         }
 
+        /**
+         * 重新渲染指定行
+         */
         public Test(){
             //this.rerender()
             const oldHeight = this.topContext.height;

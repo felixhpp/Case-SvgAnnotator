@@ -74,7 +74,16 @@ export class View implements RepositoryRoot {
         }
         this.resize();
         this.svgDoc.on('mouseup', ()=>{
+
             this.root.textSelectionHandler.textSelected();
+        });
+        this.svgDoc.on('mouseover', (e)=>{
+     
+            if(e.which === 1){
+                if(window.getSelection){
+                    window.console.log("高亮")
+                }
+            }
         });
     }
 
